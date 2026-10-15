@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- 入驻申请单号：GZ-ENTRY-<年>-<4 位流水> -->
+        <record id="seq_gz_merchant_entry" model="ir.sequence">
+            <field name="name">商户入驻申请单号</field>
+            <field name="code">gz.merchant.entry</field>
+            <field name="prefix">GZ-ENTRY-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

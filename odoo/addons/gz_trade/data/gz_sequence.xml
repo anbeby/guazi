@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- 询价单号：GZ-INQ-<年>-<4 位流水> -->
+        <record id="seq_gz_inquiry" model="ir.sequence">
+            <field name="name">平台询价单号</field>
+            <field name="code">gz.inquiry</field>
+            <field name="prefix">GZ-INQ-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- 报价单号：GZ-QUO-<年>-<4 位流水> -->
+        <record id="seq_gz_quotation" model="ir.sequence">
+            <field name="name">平台报价单号</field>
+            <field name="code">gz.quotation</field>
+            <field name="prefix">GZ-QUO-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- 平台订单号：GZ-SO-<年>-<5 位流水>（同时写入 sale.order.client_order_ref /
+             purchase.order.partner_ref，作为跨系统幂等键） -->
+        <record id="seq_gz_order" model="ir.sequence">
+            <field name="name">平台订单号</field>
+            <field name="code">gz.order</field>
+            <field name="prefix">GZ-SO-%(year)s-</field>
+            <field name="padding">5</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- 合同编号：GZ-CT-<年>-<4 位流水> -->
+        <record id="seq_gz_contract" model="ir.sequence">
+            <field name="name">平台合同编号</field>
+            <field name="code">gz.contract</field>
+            <field name="prefix">GZ-CT-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- 结算单号：GZ-SET-<年>-<4 位流水>（同时写入 account.move.ref） -->
+        <record id="seq_gz_settlement" model="ir.sequence">
+            <field name="name">平台结算单号</field>
+            <field name="code">gz.settlement</field>
+            <field name="prefix">GZ-SET-%(year)s-</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- 交易流水号：GZ-FLOW-<年>-<6 位流水> -->
+        <record id="seq_gz_trade_flow" model="ir.sequence">
+            <field name="name">平台交易流水号</field>
+            <field name="code">gz.trade.flow</field>
+            <field name="prefix">GZ-FLOW-%(year)s-</field>
+            <field name="padding">6</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

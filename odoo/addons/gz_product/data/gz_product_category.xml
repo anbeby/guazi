@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ==============================================================
+             瓜子油料分类树（与自研平台 category.code 对齐）
+                 瓜子油料 GZ
+                 ├── 葵花籽 GZ-SUN     ├── 南瓜籽 GZ-PUM
+                 ├── 打瓜籽 GZ-SEED    └── 加工产品 GZ-PRO
+                                             ├── 炒货成品 GZ-PRO-ROAST
+                                             ├── 榨油原料 GZ-PRO-OIL
+                                             └── 饲料原料 GZ-PRO-FEED
+             ============================================================== -->
+        <record id="gz_categ_root" model="product.category">
+            <field name="name">瓜子油料</field>
+            <field name="gz_code">GZ</field>
+            <field name="gz_category_type">other</field>
+            <field name="gz_is_leaf" eval="False"/>
+        </record>
+
+        <record id="gz_categ_sunflower" model="product.category">
+            <field name="name">葵花籽</field>
+            <field name="parent_id" ref="gz_categ_root"/>
+            <field name="gz_code">GZ-SUN</field>
+            <field name="gz_category_type">sunflower</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+        <record id="gz_categ_pumpkin" model="product.category">
+            <field name="name">南瓜籽</field>
+            <field name="parent_id" ref="gz_categ_root"/>
+            <field name="gz_code">GZ-PUM</field>
+            <field name="gz_category_type">pumpkin</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+        <record id="gz_categ_seed" model="product.category">
+            <field name="name">打瓜籽</field>
+            <field name="parent_id" ref="gz_categ_root"/>
+            <field name="gz_code">GZ-SEED</field>
+            <field name="gz_category_type">seed</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+        <record id="gz_categ_processed" model="product.category">
+            <field name="name">加工产品</field>
+            <field name="parent_id" ref="gz_categ_root"/>
+            <field name="gz_code">GZ-PRO</field>
+            <field name="gz_category_type">processed</field>
+            <field name="gz_is_leaf" eval="False"/>
+        </record>
+
+        <record id="gz_categ_roast" model="product.category">
+            <field name="name">炒货成品</field>
+            <field name="parent_id" ref="gz_categ_processed"/>
+            <field name="gz_code">GZ-PRO-ROAST</field>
+            <field name="gz_category_type">processed</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+        <record id="gz_categ_oil" model="product.category">
+            <field name="name">榨油原料</field>
+            <field name="parent_id" ref="gz_categ_processed"/>
+            <field name="gz_code">GZ-PRO-OIL</field>
+            <field name="gz_category_type">processed</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+        <record id="gz_categ_feed" model="product.category">
+            <field name="name">饲料原料</field>
+            <field name="parent_id" ref="gz_categ_processed"/>
+            <field name="gz_code">GZ-PRO-FEED</field>
+            <field name="gz_category_type">processed</field>
+            <field name="gz_is_leaf" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- 企业编码序列：ENT-<年>-<5 位流水>，与自研平台 enterprise.code 对齐 -->
+        <record id="seq_gz_enterprise" model="ir.sequence">
+            <field name="name">企业主体编码</field>
+            <field name="code">gz.enterprise</field>
+            <field name="prefix">ENT-%(year)s-</field>
+            <field name="padding">5</field>
+            <field name="implementation">standard</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>
