@@ -1,0 +1,17 @@
+# -*- coding: utf-8 -*-
+# 第十师瓜子油料数字化交易平台 —— 企业侧 Odoo 17 附加 Python 依赖
+#
+# 安装方式：Dockerfile 中 `python3 -m pip install -r requirements.txt`
+# 说明：
+#   * odoo:17.0 官方镜像已内置 psycopg2（系统包）。此处仍显式声明 psycopg2-binary，
+#     用于本地（非官方镜像）环境以及镜像内 psycopg2 缺失时的兜底；两者 ABI 兼容。
+#   * requests 供 gz_trade 的 ir.cron（_cron_sync_platform）调用自研平台
+#     /api/v1/integration/odoo/* 接口使用，调用点已做 try/except 容错。
+#   * qrcode[pil] 用于后续批次溯源码（二维码）生成，Pillow 为其图像后端。
+
+psycopg2-binary==2.9.9
+python-dateutil==2.9.0.post0
+openpyxl==3.1.2
+qrcode[pil]==7.4.2
+Pillow==10.4.0
+requests==2.32.3

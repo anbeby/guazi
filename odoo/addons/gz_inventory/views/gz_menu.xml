@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 仓储管理：挂在 gz_platform_base 的根菜单下 -->
+    <menuitem id="menu_gz_inventory_root"
+              name="仓储管理"
+              parent="gz_platform_base.menu_gz_root"
+              sequence="40"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_finance"/>
+
+    <menuitem id="menu_gz_stock_batch"
+              name="批次管理"
+              parent="menu_gz_inventory_root"
+              action="action_gz_stock_batch"
+              sequence="10"/>
+
+    <menuitem id="menu_gz_stock_batch_warning"
+              name="库存预警"
+              parent="menu_gz_inventory_root"
+              action="action_gz_stock_batch_warning"
+              sequence="20"/>
+
+    <menuitem id="menu_gz_warehouse_config"
+              name="仓储参数"
+              parent="menu_gz_inventory_root"
+              action="action_gz_warehouse_config"
+              sequence="30"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+
+</odoo>

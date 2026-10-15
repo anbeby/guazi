@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         入驻申请：列表
+         ================================================================== -->
+    <record id="view_gz_merchant_entry_tree" model="ir.ui.view">
+        <field name="name">gz.merchant.entry.tree</field>
+        <field name="model">gz.merchant.entry</field>
+        <field name="arch" type="xml">
+            <tree string="入驻申请"
+                  decoration-danger="state == 'rejected'"
+                  decoration-success="state == 'approved'"
+                  decoration-info="state == 'submitted'">
+                <field name="name"/>
+                <field name="enterprise_id"/>
+                <field name="enterprise_type" optional="hide"/>
+                <field name="park_name"/>
+                <field name="stall_code"/>
+                <field name="apply_date"/>
+                <field name="applicant" optional="hide"/>
+                <field name="main_products" optional="hide"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         入驻申请：看板
+         ================================================================== -->
+    <record id="view_gz_merchant_entry_kanban" model="ir.ui.view">
+        <field name="name">gz.merchant.entry.kanban</field>
+        <field name="model">gz.merchant.entry</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="enterprise_id"/>
+                <field name="park_name"/>
+                <field name="stall_code"/>
+                <field name="apply_date"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_record_title">
+                                <strong><field name="name"/></strong>
+                            </div>
+                            <div class="o_kanban_record_subtitle">
+                                <field name="enterprise_id"/>
+                            </div>
+                            <div>
+                                <span class="me-2"><field name="park_name"/></span>
+                                <span><field name="stall_code"/></span>
+                            </div>
+                            <div class="text-muted">
+                                <field name="apply_date"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         入驻申请：表单
+         ================================================================== -->
+    <record id="view_gz_merchant_entry_form" model="ir.ui.view">
+        <field name="name">gz.merchant.entry.form</field>
+        <field name="model">gz.merchant.entry</field>
+        <field name="arch" type="xml">
+            <form string="入驻申请">
+                <header>
+                    <button name="action_submit" type="object" string="提交申请"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object" string="审核通过"
+                            class="oe_highlight" invisible="state != 'submitted'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <button name="action_reject" type="object" string="审核驳回"
+                            invisible="state != 'submitted'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <button name="action_reset_draft" type="object" string="撤回草稿"
+                            invisible="state not in ('submitted', 'rejected')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="申请单号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="申请主体">
+                            <field name="enterprise_id" options="{'no_create': True}"/>
+                            <field name="enterprise_type"/>
+                            <field name="applicant"/>
+                            <field name="contact_phone"/>
+                        </group>
+                        <group string="入驻意向">
+                            <field name="park_name"/>
+                            <field name="stall_code"/>
+                            <field name="apply_date"/>
+                            <field name="main_products"/>
+                        </group>
+                    </group>
+                    <group string="审核">
+                        <group>
+                            <field name="audit_user_id"/>
+                            <field name="audit_date"/>
+                        </group>
+                        <group>
+                            <field name="audit_remark"/>
+                        </group>
+                    </group>
+                    <group string="申请说明">
+                        <field name="remark" nolabel="1" placeholder="经营计划、场地需求、预计开业时间等"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         入驻申请：搜索
+         ================================================================== -->
+    <record id="view_gz_merchant_entry_search" model="ir.ui.view">
+        <field name="name">gz.merchant.entry.search</field>
+        <field name="model">gz.merchant.entry</field>
+        <field name="arch" type="xml">
+            <search string="入驻申请">
+                <field name="name"/>
+                <field name="enterprise_id"/>
+                <field name="park_name"/>
+                <field name="stall_code"/>
+                <field name="applicant"/>
+                <filter name="filter_draft" string="草稿" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_submitted" string="待审核" domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_approved" string="已通过" domain="[('state', '=', 'approved')]"/>
+                <separator/>
+                <filter name="filter_today" string="今日申请"
+                        domain="[('apply_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                    <filter name="group_park" string="申请园区" context="{'group_by': 'park_name'}"/>
+                    <filter name="group_apply_date" string="申请日期" context="{'group_by': 'apply_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         入驻申请：动作
+         ================================================================== -->
+    <record id="action_gz_merchant_entry" model="ir.actions.act_window">
+        <field name="name">入驻申请</field>
+        <field name="res_model">gz.merchant.entry</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="view_gz_merchant_entry_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有入驻申请</p>
+            <p>商户提交入驻申请，园区运营审核通过后回填企业主体的园区与档口信息。</p>
+        </field>
+    </record>
+
+</odoo>

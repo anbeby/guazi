@@ -1,0 +1,628 @@
+# ==============================================================================
+# 第十师瓜子油料数字化交易平台 —— 全栈 Docker Compose 编排（阶段一：单机部署）
+# 文件位置：deploy/docker-compose.yml
+# ------------------------------------------------------------------------------
+# 【资源建议】
+#   生产最小集：8 vCPU / 32 GB RAM / 500 GB SSD（NVMe 优先）
+#   内存分配参考：ElasticSearch 1 GB 堆（容器约 2.5~3 GB）、Odoo 2 workers（约 1.5 GB）、
+#                API 4 workers（约 1.2 GB）、PostgreSQL（约 1 GB shared_buffers 512MB）、
+#                Superset（约 1.5 GB）、Redis（maxmemory 2 GB）、MinIO（约 0.5 GB）
+#   开发/演示机：4 vCPU / 16 GB RAM 可跑通，但需把 ES_JAVA_OPTS 与 redis maxmemory 下调，
+#                并把 api 的 workers 从 4 降到 2、odoo workers 从 2 降到 1。
+#
+# 【启动顺序】（由 depends_on 自动保证，无需手工等待）
+#   1) postgres / redis / minio / elasticsearch        —— 基础设施
+#   2) minio-init（一次性）                            —— 建 bucket 与策略
+#   3) odoo / api / admin-web / superset-init（一次性）—— 应用与前端的数据库初始化
+#   4) worker                                          —— 后台任务（索引、Odoo 同步、结算跑批）
+#   5) superset                                        —— BI（须等 superset-init 成功）
+#   6) nginx（网关，最后一个对外）
+#   首次启动约需 3~8 分钟（ES 与 Odoo 最慢）。查看进度：
+#     docker compose -f deploy/docker-compose.yml ps
+#
+# 【数据卷说明】（全部为具名卷，位于 Docker 数据目录 /var/lib/docker/volumes/）
+#   postgres_data   PostgreSQL 16 集群数据；承载 gz_odoo / gz_platform / superset 三个库
+#   redis_data      Redis AOF + RDB 持久化文件
+#   minio_data      MinIO 对象数据（商品图片、检测报告、合同附件、溯源证据）
+#   es_data         ElasticSearch 索引数据（可重建，丢失不影响主链路）
+#   odoo_data       Odoo filestore 与 session（附件实体，务必与 postgres_data 一起备份）
+#   odoo_addons     自研 gz_* 模块挂载卷（开发期为源码挂载，生产建议改为镜像内置）
+#   superset_data   Superset 上传文件与缓存（元数据库在 PostgreSQL 的 superset 库）
+#   备份命令见 deploy/scripts/backup.sh；切勿单独删除 postgres_data 或 odoo_data。
+#
+# 【重要约定】
+#   - 所有密码/密钥一律通过同目录 .env 注入，本文件不硬编码任何凭据。
+#     首次部署：cp .env.example .env（Windows: copy .env.example .env）后修改密码。
+#   - build.context 均相对本文件所在目录（deploy/）解析：
+#     ../odoo、../services/api、../apps/admin-web。
+#     对应目录的 Dockerfile 由各业务负责人自行维护，本编排只做引用。
+#   - 仅 nginx / odoo / superset 默认对外暴露端口；数据库与中间件默认只在 gz-net 内网可达。
+#   - 【Odoo 配置来源】Odoo 官方镜像的 entrypoint 每次启动都会重写
+#     /etc/odoo/odoo.conf，并以命令行参数形式传入数据库连接与 workers 等设置。
+#     因此 odoo 服务的 environment 才是运行期生效的配置源；
+#     conf/odoo/odoo.conf 不能以 :ro 挂载（entrypoint 需要 sed -i 写它），
+#     详见该文件头部的详细说明。
+# ==============================================================================
+
+# 统一日志限制，避免容器日志撑爆磁盘（每个容器最多 10MB x 3 个文件 = 30MB）
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# API 与 worker 共用同一镜像与同一套环境变量（worker 只是换 command）
+x-api-environment: &api-environment
+  TZ: ${TZ:-Asia/Shanghai}
+  APP_ENV: ${APP_ENV:-production}
+  APP_DEBUG: ${DEBUG:-false}
+  DATABASE_URL: ${DATABASE_URL}
+  REDIS_URL: ${REDIS_URL}
+  REDIS_ENABLED: ${REDIS_ENABLED:-true}
+  ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+  ELASTICSEARCH_ENABLED: ${ELASTICSEARCH_ENABLED:-true}
+  MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+  # 自研平台读取的键名为 MINIO_ACCESS_KEY / MINIO_SECRET_KEY，
+  # 与 MinIO 服务本身的 MINIO_ROOT_USER / MINIO_ROOT_PASSWORD 同值映射，避免两套变量不一致。
+  MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+  MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+  MINIO_BUCKET: ${MINIO_BUCKET:-gz-product}
+  MINIO_SECURE: ${MINIO_SECURE:-false}
+  MINIO_ENABLED: ${MINIO_ENABLED:-true}
+  # MinIO 不可用时的本地降级目录（与下方 api 服务的卷挂载保持一致）
+  LOCAL_STORAGE_DIR: /app/var/files
+  API_SECRET_KEY: ${API_SECRET_KEY}
+  JWT_SECRET: ${JWT_SECRET}
+  INTEGRATION_SECRET: ${INTEGRATION_SECRET}
+  ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-120}
+  REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+  # 自研平台使用 ODOO_BASE_URL / ODOO_USER / ODOO_PASSWORD 三个键名
+  ODOO_BASE_URL: ${ODOO_URL:-http://odoo:8069}
+  ODOO_DB: ${ODOO_DB:-gz_odoo}
+  ODOO_USER: ${ODOO_ADMIN_USER:-admin}
+  ODOO_PASSWORD: ${ODOO_LOGIN_PASSWORD:-admin}
+  PLATFORM_SERVICE_FEE_RATE: ${PLATFORM_SERVICE_FEE_RATE:-0.005}
+  DEFAULT_TAX_RATE: ${DEFAULT_TAX_RATE:-0.09}
+  # 局域网部署：允许同网段 PC/手机浏览器跨域直连 API（默认放开，生产可收敛为具体域名）
+  CORS_ORIGINS: ${CORS_ORIGINS:-*}
+  # 中文时区与编码（避免 Excel/PDF 导出乱码）
+  LANG: C.UTF-8
+
+networks:
+  # 自定义桥接网络：服务之间用服务名互相访问，不依赖宿主端口
+  gz-net:
+    name: gz-net
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: gz_postgres_data
+  redis_data:
+    name: gz_redis_data
+  minio_data:
+    name: gz_minio_data
+  es_data:
+    name: gz_es_data
+  odoo_data:
+    name: gz_odoo_data
+  odoo_addons:
+    name: gz_odoo_addons
+  superset_data:
+    name: gz_superset_data
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16：同实例三库
+  #   gz_odoo      Odoo 业务库
+  #   gz_platform  自研平台库（业务表位于 schema gz）
+  #   superset     Superset 元数据库
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: gz-postgres
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      POSTGRES_USER: ${POSTGRES_USER:-gz}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-gz_platform}
+      # 初始化脚本中创建的只读账号（initdb 阶段使用，详见 conf/postgres/init/02-readonly.sql）
+      POSTGRES_READONLY_USER: ${POSTGRES_READONLY_USER:-gz_ro}
+      POSTGRES_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD:-gz_ro_change_me}
+      # 中文排序与 UTF8（仅对 postgres 官方镜像的 initdb 生效）
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # 仅在数据目录为空（首次初始化）时执行，按文件名顺序执行
+      - ./conf/postgres/init:/docker-entrypoint-initdb.d:ro
+    # 默认不暴露到公网，仅 gz-net 内可达。
+    # 需要宿主用 psql/DBeaver 调试时执行：docker compose port postgres 5432
+    # 或临时启用下面两行：
+    # ports:
+    #   - "${POSTGRES_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # Redis 7：JWT 黑名单 / 幂等键 / 热点缓存 / 驾驶舱聚合缓存
+  # 持久化：AOF(everysec) + RDB 快照，两者都开（见 conf/redis/redis.conf）
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: gz-redis
+    restart: unless-stopped
+    # 命令行参数优先级高于 redis.conf：
+    # 用 shell 展开 ${REDIS_PASSWORD}，从而不在 redis.conf 里硬编码密码。
+    # 持久化、内存策略、日志等其余项统一写在 conf/redis/redis.conf。
+    command:
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+      - --requirepass
+      - ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./conf/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    # 需要宿主调试时解除注释（注意 Redis 7 受保护模式 + 密码）
+    # ports:
+    #   - "${REDIS_HOST_PORT:-6379}:6379"
+    healthcheck:
+      # -a 传密码；-h 127.0.0.1 避免 IPv6 解析差异导致误报
+      test: ["CMD-SHELL", "redis-cli -h 127.0.0.1 -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # MinIO：S3 兼容对象存储（商品图片 / 检测报告 / 合同附件 / 溯源证据）
+  # 控制台 9001，S3 API 9000
+  # ---------------------------------------------------------------------------
+  minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: gz-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # 关闭匿名统计上报（内网/离线环境更干净）
+      MINIO_UPDATE: "off"
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://localhost:9001}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # minio-init：一次性任务 —— 等待 MinIO 就绪、创建 bucket 与访问策略
+  # 失败可直接重跑：docker compose run --rm minio-init
+  # ---------------------------------------------------------------------------
+  minio-init:
+    image: pgsty/mc@sha256:cfc83108c3abb371f8fb84d99c1fdc88f8c237e022409b0081fb7c0a3be634dd
+    container_name: gz-minio-init
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-gz-product}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo "[minio-init] 配置 mc 别名 ..."
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        # 主力桶：由 MINIO_BUCKET 指定（默认 gz-product）
+        echo "[minio-init] 创建 bucket: $$MINIO_BUCKET"
+        mc mb --ignore-existing "local/$$MINIO_BUCKET"
+        # 其余业务桶（见 conf/minio/README.md 的 bucket 规划）
+        for b in gz-report gz-contract gz-trace; do
+          echo "[minio-init] 创建 bucket: $$b"
+          mc mb --ignore-existing "local/$$b"
+        done
+        # 访问策略：默认全部 private，文件统一由 API 通过预签名 URL 下发。
+        # 若确需公开读取（例如溯源二维码图片），把下行 --recursive 的桶名单独公开：
+        #   mc anonymous set download local/gz-trace
+        mc anonymous set none "local/$$MINIO_BUCKET" || true
+        echo "[minio-init] 当前 bucket 列表："
+        mc ls local
+        echo "[minio-init] 完成。"
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # ElasticSearch 8：商品与商户全文检索（不可用时平台自动降级 SQL LIKE）
+  # 单节点 + 关闭安全（仅内网，生产如需开启请同时改 API 的 ELASTICSEARCH_URL）
+  # ---------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: gz-elasticsearch
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      node.name: gz-es01
+      cluster.name: gz-es-cluster
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: ${ES_JAVA_OPTS:--Xms1g -Xmx1g}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    # 宿主调试用（生产不要暴露 9200 到公网）
+    # ports:
+    #   - "${ES_HOST_PORT:-9200}:9200"
+    healthcheck:
+      # ES 官方镜像内不含 curl/wget，因此：
+      #   1) 用 bash 内建 /dev/tcp 探测 9200 端口；
+      #   2) 通过 HTTP/1.0 请求 _cluster/health，并检查响应首行状态码与 status 字段。
+      # 期望：端口可达 + HTTP 200 + status 为 green/yellow（单节点单副本，通常为 yellow）。
+      test:
+        - CMD-SHELL
+        # 用字面块（|）而非折叠块（>）：必须保留换行，否则多条 shell 语句会拼成一行
+        - |
+          bash -c '
+          exec 3<>/dev/tcp/127.0.0.1/9200 || exit 1
+          printf "GET /_cluster/health HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3
+          resp=$(cat <&3)
+          printf "%s" "$$resp" | grep -qE "^HTTP/1\.[01] 200" || exit 1
+          printf "%s" "$$resp" | grep -qE "\"status\":\"(green|yellow)\""
+          '
+      interval: 20s
+      timeout: 10s
+      retries: 15
+      start_period: 90s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # Odoo 17 CE：ERP 底座（采购/销售/库存/财务/CRM + 自研 gz_* 模块）
+  # 镜像由 ../odoo/Dockerfile 构建（业务负责人维护），此处只引用。
+  # 首次进入后必须在"应用"中安装 gz_platform_base 等模块，见 conf/odoo/README.md
+  # ---------------------------------------------------------------------------
+  odoo:
+    build:
+      context: ../odoo
+      dockerfile: Dockerfile
+    image: ${ODOO_IMAGE:-gz-odoo:17}
+    container_name: gz-odoo
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      # ------------------------------------------------------------------
+      # 【重要】Odoo 官方镜像的 /entrypoint.sh 每次启动都会**重写**
+      #   /etc/odoo/odoo.conf，并按下述环境变量拼装命令行参数，
+      #   因此这里的环境变量才是运行期真正生效的配置来源
+      #   （conf/odoo/odoo.conf 仅作为参考模板与不生效项的备忘，见其文件头说明）。
+      #   entrypoint 会执行 `sed -i` 修改配置文件，所以 odoo.conf 必须是可写的，
+      #   不能以 :ro 挂载，否则容器启动失败。
+      # ------------------------------------------------------------------
+      HOST: postgres
+      PORT: "5432"
+      USER: ${POSTGRES_USER:-gz}
+      PASSWORD: ${POSTGRES_PASSWORD}
+      # 默认连接的数据库（Odoo 业务库）
+      DB_NAME: ${ODOO_DB:-gz_odoo}
+      ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
+      PROXY_MODE: "True"
+      LIST_DB: ${ODOO_LIST_DB:-True}
+      WORKERS: ${ODOO_WORKERS:-2}
+      MAX_CRON_THREADS: ${ODOO_MAX_CRON_THREADS:-2}
+      LIMIT_TIME_CPU: ${ODOO_LIMIT_TIME_CPU:-600}
+      LIMIT_TIME_REAL: ${ODOO_LIMIT_TIME_REAL:-1200}
+      LIMIT_MEMORY_SOFT: ${ODOO_LIMIT_MEMORY_SOFT:-2147483648}
+      LIMIT_MEMORY_HARD: ${ODOO_LIMIT_MEMORY_HARD:-2684354560}
+      # 不安装演示数据（all = 全部模块都不装 demo）
+      WITHOUT_DEMO: ${ODOO_WITHOUT_DEMO:-all}
+      # 数据目录持久化到具名卷（filestore 附件实体）
+      ODOO_DATA_DIR: /var/lib/odoo
+      # 自研模块目录（与 odoo.conf 的 addons_path 一致）
+      ADDONS_PATH: /mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+      # 说明：SMTP 与 dbfilter 不在官方 entrypoint 支持的环境变量列表内，
+      #       请在 Odoo 界面「设置 -> 技术 -> 系统参数 / 邮件服务器」中配置。
+    volumes:
+      - odoo_data:/var/lib/odoo
+      # 注意：不能加 :ro——entrypoint 会用 sed -i 修改该文件
+      - ./conf/odoo/odoo.conf:/etc/odoo/odoo.conf
+      # 自研模块：仓库 ../odoo/addons 通过具名卷在构建期注入（若 Dockerfile 已 COPY 可忽略）
+      - ../odoo/addons:/mnt/extra-addons:ro
+      # 开发期如需改模块即时生效，可改为源码挂载：
+      # - ../odoo/addons:/mnt/extra-addons
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+      - "${ODOO_LONGPOLLING_PORT:-8072}:8072"
+    healthcheck:
+      # Odoo 18+ 用 /web/login 200 判断；此处用 /web/database/selector 更宽松
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8069/web/login', timeout=5).status < 500 else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # api：自研产业平台后端（FastAPI + SQLAlchemy 2.0 + Alembic）
+  # 镜像由 ../services/api/Dockerfile 构建（业务负责人维护），worker 复用同一镜像。
+  # 对外统一经 nginx 访问：http://<host>:${GATEWAY_PORT}/api/v1/...
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ../services/api
+      dockerfile: Dockerfile
+    image: ${API_IMAGE:-gz-api:latest}
+    container_name: gz-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment: *api-environment
+    # 4 workers；--proxy-headers 让 nginx 传入的 X-Forwarded-* 生效（限流与审计取真实 IP）
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --workers
+      - "4"
+      - --proxy-headers
+      - --forwarded-allow-ips
+      - "*"
+    volumes:
+      # 上报的临时文件/本地降级存储（MinIO 不可用时的兜底目录）
+      - ./data/api-files:/app/var/files
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).status == 200 else 1)\""]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # worker：后台任务（ES 索引同步 / Odoo 单据同步 / 结算跑批 / 超时询价关闭）
+  # 与 api 同镜像、同环境变量，仅 command 不同。
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: ../services/api
+      dockerfile: Dockerfile
+    image: ${API_IMAGE:-gz-api:latest}
+    container_name: gz-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment: *api-environment
+    command: ["python", "-m", "app.worker"]
+    # worker 不监听端口，用进程存在性做存活探测
+    healthcheck:
+      test: ["CMD", "python", "-c", "import pathlib,sys; sys.exit(0 if b'app.worker' in pathlib.Path('/proc/1/cmdline').read_bytes() else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # admin-web：PC 管理后台（Vue3 + Vite + Element Plus），构建产物由镜像内 nginx 托管
+  # 镜像由 ../apps/admin-web/Dockerfile 构建（业务负责人维护）
+  # ---------------------------------------------------------------------------
+  admin-web:
+    build:
+      context: ../apps/admin-web
+      dockerfile: Dockerfile
+    image: ${ADMIN_WEB_IMAGE:-gz-admin-web:latest}
+    container_name: gz-admin-web
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    expose:
+      - "80"
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # superset：BI 与产业驾驶舱（跨库查询 gz_platform / gz_odoo）
+  # 首次启动必须等 superset-init 完成；账号见 .env 的 SUPERSET_ADMIN_*
+  # ---------------------------------------------------------------------------
+  superset:
+    image: apache/superset:4.0.2
+    container_name: gz-superset
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      superset-init:
+        condition: service_completed_successfully
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_DATABASE_URI: ${SUPERSET_DATABASE_URI}
+      # 供 superset_config.py 读取的业务库只读连接（Superset 报表专用账号）
+      GZ_PLATFORM_DB_URI: ${SUPERSET_PLATFORM_URI}
+      GZ_ODOO_DB_URI: ${SUPERSET_ODOO_URI}
+      SUPERSET_LOAD_EXAMPLES: "false"
+      PYTHONPATH: /app/pythonpath
+      # 4.0 起元数据默认走元数据库，避免 SQLite 并发写锁
+      SUPERSET_HOME: /app/superset_home
+    volumes:
+      - superset_data:/app/superset_home
+      - ./conf/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"
+    # 生产用小并发；如需 WebSocket 异步查询可加 -k gevent
+    command:
+      - /bin/sh
+      - -c
+      - >
+        superset db upgrade &&
+        gunicorn
+        --bind 0.0.0.0:8088
+        --workers 2
+        --worker-class gthread
+        --threads 20
+        --timeout 300
+        --limit-request-line 0
+        --limit-request-field_size 0
+        "superset.app:create_app()"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8088/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # superset-init：一次性任务 —— 建元数据表、建管理员、初始化角色与权限
+  # 幂等：重复执行只会提示"已存在"，不会损坏数据。
+  # ---------------------------------------------------------------------------
+  superset-init:
+    image: apache/superset:4.0.2
+    container_name: gz-superset-init
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_DATABASE_URI: ${SUPERSET_DATABASE_URI}
+      GZ_PLATFORM_DB_URI: ${SUPERSET_PLATFORM_URI}
+      GZ_ODOO_DB_URI: ${SUPERSET_ODOO_URI}
+      SUPERSET_HOME: /app/superset_home
+      PYTHONPATH: /app/pythonpath
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@example.com}
+      SUPERSET_ADMIN_FIRSTNAME: ${SUPERSET_ADMIN_FIRSTNAME:-平台}
+      SUPERSET_ADMIN_LASTNAME: ${SUPERSET_ADMIN_LASTNAME:-管理员}
+    volumes:
+      - superset_data:/app/superset_home
+      - ./conf/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        echo "[superset-init] 1/4 升级元数据库 ..."
+        superset db upgrade
+        echo "[superset-init] 2/4 创建管理员 ${SUPERSET_ADMIN_USERNAME} ..."
+        superset fab create-admin \
+          --username "$$SUPERSET_ADMIN_USERNAME" \
+          --firstname "$$SUPERSET_ADMIN_FIRSTNAME" \
+          --lastname "$$SUPERSET_ADMIN_LASTNAME" \
+          --email "$$SUPERSET_ADMIN_EMAIL" \
+          --password "$$SUPERSET_ADMIN_PASSWORD" || \
+          echo "[superset-init] 管理员已存在，跳过创建"
+        echo "[superset-init] 3/4 初始化默认角色与权限 ..."
+        superset init
+        echo "[superset-init] 4/4 完成。"
+    networks:
+      - gz-net
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # nginx：统一入口网关
+  #   /            -> admin-web:80          （PC 管理后台静态资源）
+  #   /api         -> api:8000              （自研平台 REST，含 /api/docs）
+  #   /health      -> api:8000/health       （网关存活探测）
+  #   /odoo        -> odoo:8069             （含 /websocket 长轮询）
+  #   /superset    -> superset:8088
+  # 注意：这里刻意使用 condition: service_started（而非 service_healthy），
+  #       避免任一后端启动慢导致网关在 compose up 阶段整体阻塞。
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: gz-nginx
+    restart: unless-stopped
+    depends_on:
+      admin-web:
+        condition: service_started
+      api:
+        condition: service_started
+      odoo:
+        condition: service_started
+      superset:
+        condition: service_started
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      # 完整的 http 级 + server 级配置，自成闭环；
+      # 不挂载 /etc/nginx/conf.d，避免镜像自带 default.conf 与本站点争抢 80 端口。
+      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data/nginx-logs:/var/log/nginx
+      - ./acceptance/site:/usr/share/nginx/html/report:ro
+    ports:
+      # 8080：综合入口（PC 管理后台 / 、移动端 H5 /m/ 、运维控制台 /console/ 、API /api ）
+      # 8081：管理后台专用入口（同一 server 块，便于按端口区分前台与后台）
+      - "${GATEWAY_PORT:-8080}:80"
+      - "${ADMIN_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - gz-net
+    logging: *default-logging

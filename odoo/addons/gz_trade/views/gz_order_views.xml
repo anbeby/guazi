@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         平台订单：列表
+         ================================================================== -->
+    <record id="view_gz_order_tree" model="ir.ui.view">
+        <field name="name">gz.order.tree</field>
+        <field name="model">gz.order</field>
+        <field name="arch" type="xml">
+            <tree string="平台订单"
+                  decoration-danger="state == 'cancelled'"
+                  decoration-success="state in ('completed', 'settled')"
+                  decoration-info="state == 'pending_confirm'">
+                <field name="name"/>
+                <field name="order_type"/>
+                <field name="buyer_enterprise_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="delivery_date" optional="show"/>
+                <field name="amount_untaxed" optional="hide" sum="未税合计"/>
+                <field name="tax_amount" optional="hide" sum="税额合计"/>
+                <field name="amount_total" sum="含税合计"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="stock_deducted" optional="hide"/>
+                <field name="sale_order_id" optional="hide"/>
+                <field name="purchase_order_id" optional="hide"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台订单：表单（明细 + 轨迹页签 + 单据按钮）
+         ================================================================== -->
+    <record id="view_gz_order_form" model="ir.ui.view">
+        <field name="name">gz.order.form</field>
+        <field name="model">gz.order</field>
+        <field name="arch" type="xml">
+            <form string="平台订单">
+                <header>
+                    <button name="action_confirm" type="object" string="确认订单"
+                            class="oe_highlight"
+                            invisible="state not in ('draft', 'pending_confirm')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <button name="action_set_delivering" type="object" string="发货中"
+                            invisible="state != 'confirmed'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <button name="action_complete" type="object" string="完成"
+                            invisible="state not in ('confirmed', 'delivering')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer"/>
+                    <button name="action_create_sale_order" type="object" string="生成销售单"
+                            invisible="sale_order_id != False"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_create_purchase_order" type="object" string="生成采购单"
+                            invisible="purchase_order_id != False"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_create_settlement_move" type="object" string="生成结算凭证草稿"
+                            invisible="state == 'cancelled'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_cancel" type="object" string="取消订单"
+                            invisible="state not in ('draft', 'pending_confirm', 'confirmed', 'delivering')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,pending_confirm,confirmed,delivering,completed,settled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="平台订单号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="交易主体">
+                            <field name="order_type"/>
+                            <field name="buyer_enterprise_id" options="{'no_create': True}"/>
+                            <field name="supplier_enterprise_id" options="{'no_create': True}"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="来源与交付">
+                            <field name="inquiry_id"/>
+                            <field name="quotation_id"/>
+                            <field name="delivery_date"/>
+                            <field name="delivery_address"/>
+                            <field name="stock_deducted"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="订单明细" name="gz_order_lines">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="name" optional="hide"/>
+                                    <field name="quantity" sum="合计数量"/>
+                                    <field name="uom_id" optional="hide"/>
+                                    <field name="delivered_quantity" sum="已发货合计"/>
+                                    <field name="unit_price"/>
+                                    <field name="tax_rate"/>
+                                    <field name="price_subtotal" sum="小计合计"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="remark" optional="hide"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_untaxed"/>
+                                <field name="tax_amount"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="订单轨迹" name="gz_order_timeline">
+                            <field name="timeline_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="event_time"/>
+                                    <field name="state"/>
+                                    <field name="operator_id"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="关联单据" name="gz_order_documents">
+                            <group>
+                                <group string="Odoo 单据">
+                                    <field name="sale_order_id" readonly="1"/>
+                                    <field name="purchase_order_id" readonly="1"/>
+                                </group>
+                                <group string="处理信息">
+                                    <field name="confirm_user_id"/>
+                                    <field name="confirm_date"/>
+                                    <field name="complete_date"/>
+                                </group>
+                            </group>
+                            <field name="contract_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="title"/>
+                                    <field name="amount"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                            <field name="trade_flow_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="direction"/>
+                                    <field name="biz_type"/>
+                                    <field name="amount"/>
+                                    <field name="pay_status" widget="badge"/>
+                                    <field name="paid_at"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="备注" name="gz_order_remark">
+                            <field name="remark" placeholder="交易约定、质量异议、物流信息等"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台订单：搜索
+         ================================================================== -->
+    <record id="view_gz_order_search" model="ir.ui.view">
+        <field name="name">gz.order.search</field>
+        <field name="model">gz.order</field>
+        <field name="arch" type="xml">
+            <search string="平台订单">
+                <field name="name"/>
+                <field name="buyer_enterprise_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="inquiry_id"/>
+                <field name="delivery_address"/>
+                <filter name="filter_pending_confirm" string="待确认"
+                        domain="[('state', '=', 'pending_confirm')]"/>
+                <filter name="filter_confirmed" string="已确认" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_delivering" string="发货中" domain="[('state', '=', 'delivering')]"/>
+                <filter name="filter_completed" string="已完成" domain="[('state', '=', 'completed')]"/>
+                <filter name="filter_settled" string="已结算" domain="[('state', '=', 'settled')]"/>
+                <separator/>
+                <filter name="filter_no_stock" string="未扣减库存" domain="[('stock_deducted', '=', False)]"/>
+                <filter name="filter_no_sale_order" string="未生成销售单" domain="[('sale_order_id', '=', False)]"/>
+                <separator/>
+                <filter name="filter_today" string="今日订单"
+                        domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                    <filter name="group_order_type" string="订单类型" context="{'group_by': 'order_type'}"/>
+                    <filter name="group_buyer" string="采购企业" context="{'group_by': 'buyer_enterprise_id'}"/>
+                    <filter name="group_supplier" string="供应企业" context="{'group_by': 'supplier_enterprise_id'}"/>
+                    <filter name="group_create_date" string="创建日期" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台订单：动作
+         ================================================================== -->
+    <record id="action_gz_order" model="ir.actions.act_window">
+        <field name="name">平台订单</field>
+        <field name="res_model">gz.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_order_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有平台订单</p>
+            <p>接受报价即生成平台订单；确认后可生成 Odoo 销售单 / 采购单与结算凭证草稿。</p>
+        </field>
+    </record>
+
+    <!-- 待确认订单快捷入口（看板式工作台用列表代替） -->
+    <record id="action_gz_order_pending" model="ir.actions.act_window">
+        <field name="name">待确认订单</field>
+        <field name="res_model">gz.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_order_search"/>
+        <field name="domain">[('state', 'in', ['draft', 'pending_confirm'])]</field>
+        <field name="context">{'search_default_filter_pending_confirm': 1}</field>
+    </record>
+
+</odoo>

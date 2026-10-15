@@ -1,0 +1,55 @@
+# 生产覆盖文件：与 docker-compose.yml 一起使用。
+# 业务持久化目录全部绑定到 DOcker 服务器的 /data/guazi。
+# 需要 Docker Compose >= 2.24.4（支持 !override），首次启动前创建目录并确认 /data 是数据盘。
+services:
+  postgres:
+    volumes: !override
+      - /data/guazi/postgres:/var/lib/postgresql/data
+      - ./conf/postgres/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./conf/postgres/init-production/02-readonly-production.sh:/docker-entrypoint-initdb.d/02-readonly-production.sh:ro
+      - ./conf/postgres/init/02-readonly.sql:/opt/guazi/02-readonly.sql:ro
+
+  redis:
+    volumes: !override
+      - /data/guazi/redis:/data
+      - ./conf/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+
+  minio:
+    volumes: !override
+      - /data/guazi/minio:/data
+    ports: !override []
+
+  elasticsearch:
+    volumes: !override
+      - /data/guazi/elasticsearch:/usr/share/elasticsearch/data
+
+  odoo:
+    volumes: !override
+      - /data/guazi/odoo:/var/lib/odoo
+      - ./conf/odoo/odoo.conf:/etc/odoo/odoo.conf
+      - ../odoo/addons:/mnt/extra-addons:ro
+    ports: !override []
+
+  api:
+    volumes: !override
+      - /data/guazi/api-files:/app/var/files
+    ports: !override []
+
+  superset:
+    volumes: !override
+      - /data/guazi/superset:/app/superset_home
+      - ./conf/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+    ports: !override []
+
+  superset-init:
+    volumes: !override
+      - /data/guazi/superset:/app/superset_home
+      - ./conf/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+
+  nginx:
+    volumes: !override
+      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /data/guazi/nginx-logs:/var/log/nginx
+      - ./acceptance/site:/usr/share/nginx/html/report:ro
+    ports: !override
+      - "${GATEWAY_BIND_IP:-0.0.0.0}:${GATEWAY_PORT:-8080}:80"

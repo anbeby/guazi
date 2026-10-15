@@ -1,0 +1,41 @@
+.open-portal{min-height:100vh;background:#f4f8f6;color:#17332a;font-family:'Microsoft YaHei','PingFang SC',sans-serif}
+.open-portal *{box-sizing:border-box}
+.open-portal a{color:#116c43;text-decoration:none}
+.open-portal a:hover{text-decoration:underline}
+.open-portal__header{min-height:70px;background:#fff;border-bottom:1px solid #dce9df;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px max(4%,calc((100vw - 1160px)/2))}
+.open-portal__brand{display:flex;align-items:center;gap:12px;font-weight:800;color:#123d2c!important}
+.open-portal__brand img{width:36px;height:36px}
+.open-portal__nav{display:flex;gap:18px;align-items:center;font-size:13px;font-weight:700}
+.open-portal__nav-action{border:0;background:none;padding:0;color:#607769;font:inherit;cursor:pointer;white-space:nowrap}
+.open-portal__nav-action:hover{color:#116c43;text-decoration:underline}
+.open-portal__main{width:min(1100px,92%);margin:38px auto 70px}
+.open-portal__eyebrow{font-size:12px;letter-spacing:2px;font-weight:800;color:#116c43}
+.open-portal__main h1{margin:8px 0 10px;font-size:30px;line-height:1.35;color:#123d2c}
+.open-portal__intro{color:#61766a;line-height:1.8;margin:0 0 24px}
+.open-portal__card{background:#fff;border:1px solid #dce9df;border-radius:15px;padding:26px;box-shadow:0 8px 24px #1c49300b;margin-bottom:18px}
+.open-portal__card h2{font-size:19px;margin:0 0 14px;color:#123d2c}
+.open-portal__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.open-portal__field{display:grid;gap:7px;color:#345b41;font-size:13px;font-weight:700}
+.open-portal__field--wide{grid-column:1/-1}
+.open-portal__field input,.open-portal__field textarea,.open-portal__field select{width:100%;border:1px solid #d5e3d9;border-radius:8px;padding:11px 12px;background:#fff;color:#17332a;font:inherit;font-weight:400;outline:none}
+.open-portal__field input:focus,.open-portal__field textarea:focus,.open-portal__field select:focus{border-color:#116c43;box-shadow:0 0 0 3px #116c4320}
+.open-portal__button{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:#116c43;color:#fff!important;padding:11px 18px;font-weight:800;cursor:pointer;font-size:14px}
+.open-portal__button:hover{background:#0c5635;text-decoration:none!important}
+.open-portal__button:disabled{opacity:.55;cursor:not-allowed}
+.open-portal__button--line{background:#fff;color:#116c43!important;border:1px solid #b8d9c4}
+.open-portal__button--line:hover{background:#edf7f0}
+.open-portal__actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
+.open-portal__success{background:#e9f6ed;border:1px solid #b8dfc6;border-radius:10px;padding:22px;color:#125633;line-height:1.8}
+.open-portal__muted{color:#688174;font-size:13px;line-height:1.7}
+.open-portal__stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.open-portal__stats article{background:#fff;border:1px solid #dce9df;border-radius:12px;padding:18px}
+.open-portal__stats span{font-size:13px;color:#688174}
+.open-portal__stats strong{display:block;font-size:27px;color:#116c43;margin-top:7px}
+.open-portal__list{display:grid;gap:10px}
+.open-portal__row{padding:15px;border:1px solid #e3ece5;border-radius:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.open-portal__row strong{color:#173b2a}
+.open-portal__row p{margin:6px 0;color:#65796b;line-height:1.6;font-size:13px}
+.open-portal__row small{color:#7a8e80}
+.open-portal__badge{display:inline-block;border-radius:6px;padding:4px 8px;background:#e8f4ec;color:#116c43;font-size:12px;font-weight:700;white-space:nowrap}
+.open-portal__footer{background:#123d2c;color:#e3eee7;padding:23px 4%;font-size:12px;text-align:center}
+@media(max-width:650px){.open-portal__header{flex-wrap:wrap;padding:12px 4%;gap:12px}.open-portal__brand{font-size:12px}.open-portal__brand img{width:31px;height:31px}.open-portal__nav{width:100%;justify-content:space-between;gap:7px;font-size:11px}.open-portal__main{margin:25px auto 45px}.open-portal__main h1{font-size:24px}.open-portal__card{padding:18px}.open-portal__grid{grid-template-columns:1fr}.open-portal__field--wide{grid-column:auto}.open-portal__stats{gap:7px}.open-portal__stats article{padding:11px}.open-portal__stats strong{font-size:20px}.open-portal__row{display:block}.open-portal__row .open-portal__badge{margin-top:8px}}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         记录规则：商户 / 供应商 / 采购商仅可见本企业批次
+         （enterprise_id 为空的批次视为平台公共库存，对所有角色可见）
+         园区运营与平台管理员不加限制；stock.quant / stock.lot 沿用原生规则。
+         ================================================================== -->
+    <record id="rule_gz_stock_batch_own_company" model="ir.rule">
+        <field name="name">库存批次：商户/供应商/采购商仅见本企业</field>
+        <field name="model_id" ref="model_gz_stock_batch"/>
+        <field name="domain_force">['|', ('enterprise_id', '=', False), ('enterprise_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('gz_platform_base.group_gz_merchant')), (4, ref('gz_platform_base.group_gz_supplier')), (4, ref('gz_platform_base.group_gz_buyer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

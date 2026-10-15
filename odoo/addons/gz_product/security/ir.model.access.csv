@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gz_product_audit_log_admin,gz.product.audit.log platform admin,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_product_audit_log_park,gz.product.audit.log park operator,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_park_operator,1,0,0,0
+access_gz_product_audit_log_merchant,gz.product.audit.log merchant,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_merchant,1,0,0,0
+access_gz_product_audit_log_supplier,gz.product.audit.log supplier,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_supplier,1,0,0,0
+access_gz_product_audit_log_buyer,gz.product.audit.log buyer,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_product_audit_log_finance,gz.product.audit.log finance,gz_product.model_gz_product_audit_log,gz_platform_base.group_gz_finance,1,0,0,0

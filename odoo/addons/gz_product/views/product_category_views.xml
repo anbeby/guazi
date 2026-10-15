@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         瓜子油料分类：列表（本模块自定义视图，避免依赖原生视图外部 ID）
+         ================================================================== -->
+    <record id="view_gz_product_category_tree" model="ir.ui.view">
+        <field name="name">gz.product.category.tree</field>
+        <field name="model">product.category</field>
+        <field name="arch" type="xml">
+            <tree string="商品分类">
+                <field name="name"/>
+                <field name="gz_code"/>
+                <field name="gz_category_type"/>
+                <field name="gz_is_leaf"/>
+                <field name="parent_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         瓜子油料分类：表单
+         ================================================================== -->
+    <record id="view_gz_product_category_form" model="ir.ui.view">
+        <field name="name">gz.product.category.form</field>
+        <field name="model">product.category</field>
+        <field name="arch" type="xml">
+            <form string="商品分类">
+                <sheet>
+                    <group>
+                        <group string="分类信息">
+                            <field name="name"/>
+                            <field name="parent_id"/>
+                            <field name="gz_code" placeholder="如：GZ-SUN"/>
+                            <field name="gz_category_type"/>
+                            <field name="gz_is_leaf"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         瓜子油料分类：搜索
+         ================================================================== -->
+    <record id="view_gz_product_category_search" model="ir.ui.view">
+        <field name="name">gz.product.category.search</field>
+        <field name="model">product.category</field>
+        <field name="arch" type="xml">
+            <search string="商品分类">
+                <field name="name"/>
+                <field name="gz_code"/>
+                <filter name="filter_leaf" string="叶子分类" domain="[('gz_is_leaf', '=', True)]"/>
+                <filter name="filter_sunflower" string="葵花籽" domain="[('gz_category_type', '=', 'sunflower')]"/>
+                <filter name="filter_pumpkin" string="南瓜籽" domain="[('gz_category_type', '=', 'pumpkin')]"/>
+                <filter name="filter_seed" string="打瓜籽" domain="[('gz_category_type', '=', 'seed')]"/>
+                <filter name="filter_processed" string="加工产品" domain="[('gz_category_type', '=', 'processed')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_category_type" string="分类类型" context="{'group_by': 'gz_category_type'}"/>
+                    <filter name="group_parent" string="上级分类" context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         瓜子油料分类：动作
+         ================================================================== -->
+    <record id="action_gz_product_category" model="ir.actions.act_window">
+        <field name="name">商品分类</field>
+        <field name="res_model">product.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_product_category_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有商品分类</p>
+            <p>瓜子油料分类树与自研平台 category.code 一一对应（GZ / GZ-SUN / GZ-PRO-ROAST 等）。</p>
+        </field>
+    </record>
+
+</odoo>

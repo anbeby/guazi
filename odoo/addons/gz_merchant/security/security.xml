@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         记录规则：商户 / 供应商 / 采购商仅可见本企业的资质与入驻申请
+         （平台管理员、园区运营、财务不加限制，由 ir.model.access.csv 控制）
+         ================================================================== -->
+    <record id="rule_gz_merchant_qualification_own_company" model="ir.rule">
+        <field name="name">商户资质：商户/供应商/采购商仅见本企业</field>
+        <field name="model_id" ref="model_gz_merchant_qualification"/>
+        <field name="domain_force">[('enterprise_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('gz_platform_base.group_gz_merchant')), (4, ref('gz_platform_base.group_gz_supplier')), (4, ref('gz_platform_base.group_gz_buyer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_gz_merchant_entry_own_company" model="ir.rule">
+        <field name="name">入驻申请：商户/供应商/采购商仅见本企业</field>
+        <field name="model_id" ref="model_gz_merchant_entry"/>
+        <field name="domain_force">['|', ('enterprise_id.partner_id', '=', user.partner_id.id), ('create_uid', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('gz_platform_base.group_gz_merchant')), (4, ref('gz_platform_base.group_gz_supplier')), (4, ref('gz_platform_base.group_gz_buyer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

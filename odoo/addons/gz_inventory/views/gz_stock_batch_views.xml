@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         库存批次：列表
+         ================================================================== -->
+    <record id="view_gz_stock_batch_tree" model="ir.ui.view">
+        <field name="name">gz.stock.batch.tree</field>
+        <field name="model">gz.stock.batch</field>
+        <field name="arch" type="xml">
+            <tree string="库存批次"
+                  decoration-danger="quality_status == 'unqualified' or below_warn_qty"
+                  decoration-warning="quality_status == 'pending'">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="enterprise_id" optional="show"/>
+                <field name="warehouse_id"/>
+                <field name="location_id" optional="hide"/>
+                <field name="quantity" sum="合计数量"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="below_warn_qty" optional="show"/>
+                <field name="production_date" optional="show"/>
+                <field name="expiry_date" optional="hide"/>
+                <field name="quality_status" widget="badge"/>
+                <field name="trace_code" optional="hide"/>
+                <field name="origin_base" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         库存批次：表单
+         ================================================================== -->
+    <record id="view_gz_stock_batch_form" model="ir.ui.view">
+        <field name="name">gz.stock.batch.form</field>
+        <field name="model">gz.stock.batch</field>
+        <field name="arch" type="xml">
+            <form string="库存批次">
+                <header>
+                    <button name="action_mark_qualified" type="object" string="质检合格"
+                            class="oe_highlight" invisible="quality_status == 'qualified'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <button name="action_mark_unqualified" type="object" string="质检不合格"
+                            invisible="quality_status == 'unqualified'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <button name="action_generate_trace_code" type="object" string="生成溯源码"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <field name="quality_status" widget="statusbar" statusbar_visible="pending,qualified,unqualified"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="批次号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="批次归属">
+                            <field name="product_id"/>
+                            <field name="product_tmpl_id" invisible="1"/>
+                            <field name="enterprise_id" options="{'no_create': True}"/>
+                            <field name="warehouse_id"/>
+                            <field name="location_id"/>
+                            <field name="origin_base"/>
+                        </group>
+                        <group string="数量与日期">
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="below_warn_qty"/>
+                            <field name="production_date"/>
+                            <field name="expiry_date"/>
+                            <field name="trace_code"/>
+                        </group>
+                    </group>
+                    <group string="质检">
+                        <field name="test_report" filename="test_report_filename"/>
+                        <field name="test_report_filename"/>
+                    </group>
+                    <notebook>
+                        <page string="Odoo 批次/序列号" name="gz_lots">
+                            <field name="lot_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="product_qty"/>
+                                    <field name="gz_quality_status"/>
+                                    <field name="gz_trace_code"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="备注" name="gz_remark">
+                            <field name="remark" placeholder="入库说明、质检机构、仓储条件等"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         库存批次：搜索
+         ================================================================== -->
+    <record id="view_gz_stock_batch_search" model="ir.ui.view">
+        <field name="name">gz.stock.batch.search</field>
+        <field name="model">gz.stock.batch</field>
+        <field name="arch" type="xml">
+            <search string="库存批次">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="enterprise_id"/>
+                <field name="warehouse_id"/>
+                <field name="trace_code"/>
+                <field name="origin_base"/>
+                <filter name="filter_below_warn" string="低于预警值"
+                        domain="[('below_warn_qty', '=', True)]"/>
+                <filter name="filter_pending" string="待检"
+                        domain="[('quality_status', '=', 'pending')]"/>
+                <filter name="filter_qualified" string="质检合格"
+                        domain="[('quality_status', '=', 'qualified')]"/>
+                <filter name="filter_unqualified" string="质检不合格"
+                        domain="[('quality_status', '=', 'unqualified')]"/>
+                <separator/>
+                <filter name="filter_expired" string="已过有效期"
+                        domain="[('expiry_date', '!=', False), ('expiry_date', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_product" string="商品" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_enterprise" string="归属企业" context="{'group_by': 'enterprise_id'}"/>
+                    <filter name="group_warehouse" string="仓库" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_quality" string="质检状态" context="{'group_by': 'quality_status'}"/>
+                    <filter name="group_production_date" string="生产日期" context="{'group_by': 'production_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         库存批次：动作 / 库存预警动作
+         ================================================================== -->
+    <record id="action_gz_stock_batch" model="ir.actions.act_window">
+        <field name="name">批次管理</field>
+        <field name="res_model">gz.stock.batch</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_stock_batch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有库存批次</p>
+            <p>登记批次后可执行质检、生成溯源码；数量低于商品库存预警值时自动进入库存预警。</p>
+        </field>
+    </record>
+
+    <record id="action_gz_stock_batch_warning" model="ir.actions.act_window">
+        <field name="name">库存预警</field>
+        <field name="res_model">gz.stock.batch</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_stock_batch_search"/>
+        <field name="domain">[('below_warn_qty', '=', True)]</field>
+        <field name="context">{'search_default_filter_below_warn': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">暂无库存预警</p>
+            <p>批次数量低于商品「库存预警值」（gz_stock_warn_qty）时进入本列表。</p>
+        </field>
+    </record>
+
+</odoo>

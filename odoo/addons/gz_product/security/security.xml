@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         记录规则
+         ==================================================================
+         product.template / product.category 的访问权限沿用原生（不做限制）：
+         采购商必须能够浏览供应商发布的商品，否则 B2B 撮合链路不可用；
+         商品级隔离由自研平台（平台侧 product.enterprise_id 过滤）承担。
+         此处仅对“平台商品审核日志”做按企业的可见性限制。
+         ================================================================== -->
+    <record id="rule_gz_product_audit_log_own_company" model="ir.rule">
+        <field name="name">商品审核日志：商户/供应商/采购商仅见本企业商品</field>
+        <field name="model_id" ref="model_gz_product_audit_log"/>
+        <field name="domain_force">['|', ('product_tmpl_id.gz_enterprise_id', '=', False), ('product_tmpl_id.gz_enterprise_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('gz_platform_base.group_gz_merchant')), (4, ref('gz_platform_base.group_gz_supplier')), (4, ref('gz_platform_base.group_gz_buyer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

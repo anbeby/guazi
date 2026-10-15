@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>第十师瓜子油料数字化交易平台 · 运营控制台</title>
+<style>
+  :root{
+    --bg:#f4f6fa; --panel:#fff; --line:#e4e8f0; --text:#1f2937; --muted:#6b7280;
+    --primary:#1d6f42; --primary-2:#2e8b57; --accent:#c8a44a; --danger:#d14343;
+    --warn:#c98a12; --ok:#1d6f42; --sidebar:#12261c; --sidebar-2:#1b3a2b;
+    --radius:10px; --shadow:0 2px 10px rgba(17,38,28,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--primary);text-decoration:none}
+  button{font:inherit;cursor:pointer}
+  input,select,textarea{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(46,139,87,.12)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 14px;color:var(--text)}
+  .btn:hover{border-color:var(--primary-2);color:var(--primary)}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{background:var(--primary-2)}
+  .btn.danger{color:var(--danger);border-color:#f0cccc}
+  .btn.sm{padding:3px 9px;font-size:12px;border-radius:6px}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ---------- 登录 ---------- */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#12261c 0%,#1d6f42 55%,#c8a44a 140%)}
+  #login .card{width:400px;background:#fff;border-radius:16px;padding:34px 32px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+  #login h1{margin:0 0 6px;font-size:20px;color:var(--primary)}
+  #login p.sub{margin:0 0 22px;color:var(--muted);font-size:13px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+  .field input{width:100%}
+  .tip{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.8;background:#f8faf9;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+
+  /* ---------- 布局 ---------- */
+  #app{display:none;min-height:100vh}
+  .layout{display:flex;min-height:100vh}
+  .sidebar{width:222px;background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));color:#d9e6df;flex:0 0 222px}
+  .brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.09)}
+  .brand b{display:block;font-size:15px;color:#fff;letter-spacing:.4px}
+  .brand span{font-size:11px;color:#8fb3a2}
+  .nav{padding:10px 8px}
+  .nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;color:#c9dcd3;font-size:13.5px;margin-bottom:2px}
+  .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+  .nav a.active{background:var(--primary);color:#fff;font-weight:600}
+  .nav .grp{font-size:11px;color:#7ea08f;padding:12px 12px 4px;letter-spacing:1px}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:5}
+  .topbar .title{font-weight:600}
+  .topbar .who{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+  .content{padding:18px 20px 40px;flex:1}
+
+  /* ---------- 组件 ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px}
+  .card>header{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .card>header h3{margin:0;font-size:14.5px}
+  .card>header .hint{font-size:12px;color:var(--muted)}
+  .card .body{padding:14px 16px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .kpi .k{font-size:12px;color:var(--muted)}
+  .kpi .v{font-size:23px;font-weight:700;color:var(--primary);margin-top:4px;font-variant-numeric:tabular-nums}
+  .kpi .u{font-size:12px;color:var(--muted);margin-left:4px;font-weight:400}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{background:#f8faf9;color:var(--muted);font-weight:600;white-space:nowrap}
+  tbody tr:hover{background:#fbfdfc}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid transparent;white-space:nowrap}
+  .tag.gray{background:#f1f3f6;color:#5b6472}
+  .tag.green{background:#e7f5ec;color:var(--ok);border-color:#cbe7d6}
+  .tag.blue{background:#e8f1fb;color:#1c5fa8;border-color:#cfe1f5}
+  .tag.orange{background:#fdf3e2;color:var(--warn);border-color:#f4e2c2}
+  .tag.red{background:#fdecec;color:var(--danger);border-color:#f6d5d5}
+  .pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:10px 4px 2px;color:var(--muted);font-size:13px}
+  .empty{padding:34px 10px;text-align:center;color:var(--muted)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+  .bars{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:8px}
+  .bars .bar{flex:1;background:linear-gradient(180deg,var(--primary-2),var(--primary));border-radius:4px 4px 0 0;min-height:2px;position:relative}
+  .bars .bar span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:10px;color:var(--muted)}
+  .bars .bar em{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:10px;color:var(--primary);font-style:normal}
+
+  /* ---------- 弹窗 / 提示 ---------- */
+  .mask{position:fixed;inset:0;background:rgba(12,24,18,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal{background:#fff;border-radius:12px;width:100%;max-width:560px;max-height:86vh;overflow:auto;box-shadow:0 30px 70px rgba(0,0,0,.3)}
+  .modal header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal header h3{margin:0;font-size:15px}
+  .modal .body{padding:16px 18px}
+  .modal footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+  .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .toast{position:fixed;top:16px;right:16px;z-index:99;display:flex;flex-direction:column;gap:8px}
+  .toast div{background:#12261c;color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:340px}
+  .toast div.err{background:var(--danger)}
+  .toast div.ok{background:var(--primary)}
+  .mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px}
+  .muted{color:var(--muted)}
+  @media (max-width:820px){
+    .sidebar{display:none}
+    .content{padding:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ 登录 ============================ -->
+<div id="login">
+  <form class="card" id="loginForm" autocomplete="on">
+    <h1>第十师瓜子油料数字化交易平台</h1>
+    <p class="sub">产业互联网交易 · 智慧园区 · 商户经营 · 数据分析</p>
+    <div class="field">
+      <label>账号</label>
+      <input id="loginUser" name="username" value="admin" autocomplete="username" required />
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input id="loginPass" name="password" type="password" value="" autocomplete="current-password" required />
+    </div>
+    <button class="btn primary" style="width:100%;padding:10px" type="submit">登 录</button>
+    <div class="tip">请联系平台管理员领取账号。</div>
+  </form>
+</div>
+
+<!-- ============================ 主体 ============================ -->
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><b>瓜子油料交易平台</b><span>第十师北屯市 · 运营控制台</span></div>
+      <nav class="nav" id="nav"></nav>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div class="title" id="pageTitle">数据驾驶舱</div>
+        <div class="who">
+          <span id="whoami" class="muted"></span>
+          <a href="/api/docs" target="_blank">接口文档</a>
+          <a href="/m/" target="_blank">移动端</a>
+          <button class="btn sm" id="logoutBtn">退出</button>
+        </div>
+      </div>
+      <div class="content" id="view"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+ * 免构建运营控制台（直连真实 REST API，无任何模拟数据）
+ * 统一信封：{code,message,data}；分页：data.items / data.total
+ * ========================================================================= */
+
+const API = "/api/v1";
+const store = {
+  token: localStorage.getItem("gz_token") || "",
+  user: null,
+};
+
+/* ------------------------------- 基础工具 ------------------------------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v, digits = 2) => {
+  const n = Number(v ?? 0);
+  if (!isFinite(n)) return "0";
+  return n.toLocaleString("zh-CN", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+};
+const int = (v) => Number(v ?? 0).toLocaleString("zh-CN");
+const dt = (v) => (v ? String(v).replace("T", " ").slice(0, 19) : "-");
+const day = (v) => (v ? String(v).slice(0, 10) : "-");
+const qs = (obj) => {
+  const p = new URLSearchParams();
+  Object.entries(obj || {}).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") p.append(k, v);
+  });
+  const s = p.toString();
+  return s ? "?" + s : "";
+};
+
+function toast(msg, kind = "") {
+  const box = $("#toast");
+  const el = document.createElement("div");
+  el.className = kind;
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 3600);
+}
+
+async function api(path, { method = "GET", body, query } = {}) {
+  const headers = { Accept: "application/json" };
+  if (store.token) headers.Authorization = "Bearer " + store.token;
+  let payload;
+  if (body instanceof FormData) payload = body;
+  else if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(body);
+  }
+  const res = await fetch(API + path + qs(query), { method, headers, body: payload });
+  let data = null;
+  const text = await res.text();
+  try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+  if (res.status === 401) {
+    store.token = "";
+    localStorage.removeItem("gz_token");
+    showLogin();
+    throw new Error((data && data.message) || "登录已失效，请重新登录");
+  }
+  if (!data) throw new Error("服务响应异常（HTTP " + res.status + "）");
+  if (data.code !== 0) throw new Error(data.message || "请求失败");
+  return data.data;
+}
+const GET = (p, q) => api(p, { query: q });
+const POST = (p, b) => api(p, { method: "POST", body: b });
+const PUT = (p, b) => api(p, { method: "PUT", body: b });
+const DEL = (p) => api(p, { method: "DELETE" });
+
+/* ------------------------------- 字典与标签 ----------------------------- */
+const DICT = {
+  enterprise_type: { merchant: "商户", supplier: "供应商", buyer: "采购商", platform: "平台" },
+  audit_status: { pending: ["待审核", "orange"], approved: ["已通过", "green"], rejected: ["已驳回", "red"] },
+  ent_status: { active: ["正常", "green"], disabled: ["停用", "gray"] },
+  product_status: { draft: ["草稿", "gray"], published: ["已上架", "green"], offline: ["已下架", "gray"], rejected: ["已驳回", "red"] },
+  grade: { special: "特级", first: "一级", second: "二级", mixed: "统货" },
+  unit: { ton: "吨", kg: "千克", bag: "袋", piece: "件" },
+  order_status: {
+    draft: ["草稿", "gray"], pending_confirm: ["待确认", "orange"], confirmed: ["已确认", "blue"],
+    delivering: ["发货中", "blue"], completed: ["已完成", "green"], settled: ["已结算", "green"], cancelled: ["已取消", "red"],
+  },
+  inquiry_status: {
+    draft: ["草稿", "gray"], submitted: ["待报价", "orange"], quoted: ["已报价", "blue"],
+    confirmed: ["已成交", "green"], closed: ["已关闭", "gray"], cancelled: ["已取消", "red"],
+  },
+  quotation_status: { submitted: ["待确认", "orange"], accepted: ["已接受", "green"], rejected: ["已拒绝", "red"], expired: ["已失效", "gray"] },
+  move_type: { in: "入库", out: "出库", transfer: "调拨", adjust: "调整", check: "盘点" },
+  settle_status: { pending: ["待确认", "orange"], confirmed: ["已确认", "blue"], settled: ["已结清", "green"], cancelled: ["已取消", "red"] },
+  pay_status: { unpaid: ["未回款", "orange"], partial: ["部分回款", "blue"], paid: ["已回款", "green"] },
+  stall_status: { free: ["空闲", "gray"], rented: ["已租", "green"], reserved: ["预留", "orange"], maintenance: ["维护", "red"] },
+  quality_status: { pending: ["待检", "orange"], qualified: ["合格", "green"], unqualified: ["不合格", "red"] },
+  settle_type: { receivable: "应收", payable: "应付", park_fee: "园区费用" },
+  direction: { in: "收入", out: "支出" },
+};
+const dict = (group, key, rawIfMissing = true) => {
+  const item = (DICT[group] || {})[key];
+  if (item === undefined) return rawIfMissing ? (key ?? "-") : "-";
+  return Array.isArray(item) ? item[0] : item;
+};
+const tag = (group, key) => {
+  const item = (DICT[group] || {})[key];
+  if (Array.isArray(item)) return `<span class="tag ${item[1]}">${esc(item[0])}</span>`;
+  const label = item !== undefined ? item : (key ?? "-");
+  return `<span class="tag gray">${esc(label)}</span>`;
+};
+
+/* ------------------------------- 弹窗 ------------------------------- */
+function openModal({ title, bodyHtml, okText = "确定", onOk, width }) {
+  const root = $("#modalRoot");
+  root.innerHTML =
+    `<div class="mask"><div class="modal" ${width ? `style="max-width:${width}px"` : ""}>
+      <header><h3>${esc(title)}</h3><button class="btn sm" data-close>关闭</button></header>
+      <div class="body">${bodyHtml}</div>
+      <footer>
+        <button class="btn" data-close>取消</button>
+        <button class="btn primary" data-ok>${esc(okText)}</button>
+      </footer>
+    </div></div>`;
+  const close = () => (root.innerHTML = "");
+  root.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+  const okBtn = root.querySelector("[data-ok]");
+  okBtn.addEventListener("click", async () => {
+    if (!onOk) return close();
+    okBtn.disabled = true;
+    try {
+      const keep = await onOk(root.querySelector(".modal"));
+      if (keep !== false) close();
+    } catch (e) {
+      toast(e.message, "err");
+    } finally {
+      okBtn.disabled = false;
+    }
+  });
+  return { close, root };
+}
+
+function pager(state, onGo) {
+  const pages = Math.max(1, Math.ceil((state.total || 0) / state.pageSize));
+  const el = document.createElement("div");
+  el.className = "pager";
+  el.innerHTML = `<span>共 ${int(state.total)} 条，第 ${state.page}/${pages} 页</span>`;
+  const prev = document.createElement("button");
+  prev.className = "btn sm"; prev.textContent = "上一页"; prev.disabled = state.page <= 1;
+  prev.onclick = () => onGo(state.page - 1);
+  const next = document.createElement("button");
+  next.className = "btn sm"; next.textContent = "下一页"; next.disabled = state.page >= pages;
+  next.onclick = () => onGo(state.page + 1);
+  el.append(prev, next);
+  return el;
+}
+
+function tableCard({ title, hint, toolbarHtml, columns, rows, state, onGo }) {
+  const table = document.createElement("div");
+  table.className = "card";
+  table.innerHTML = `<header><h3>${esc(title)}</h3><div class="hint">${hint || ""}</div><div class="toolbar">${toolbarHtml || ""}</div></header>`;
+  const body = document.createElement("div");
+  body.className = "body";
+  if (!rows.length) {
+    body.innerHTML = `<div class="empty">暂无数据</div>`;
+  } else {
+    const thead = columns.map((c) => `<th class="${c.num ? "num" : ""}">${esc(c.title)}</th>`).join("");
+    const tbody = rows
+      .map((row) => "<tr>" + columns.map((c) => `<td class="${c.num ? "num" : ""}">${c.render(row)}</td>`).join("") + "</tr>")
+      .join("");
+    body.innerHTML = `<div style="overflow:auto"><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+  }
+  table.appendChild(body);
+  if (state && onGo) table.appendChild(pager(state, onGo));
+  return table;
+}
+
+/* ------------------------------- 菜单与路由 ----------------------------- */
+const MENU = [
+  { grp: "总览" },
+  { key: "dashboard", title: "数据驾驶舱", perm: "data:read" },
+  { grp: "商户与商品" },
+  { key: "enterprises", title: "商户档案", perm: "merchant:read" },
+  { key: "products", title: "商品中心", perm: "product:read" },
+  { key: "categories", title: "商品分类", perm: "product:read" },
+  { grp: "仓储与交易" },
+  { key: "inventory", title: "库存管理", perm: "inventory:read" },
+  { key: "moves", title: "出入库流水", perm: "inventory:read" },
+  { key: "inquiries", title: "询价与报价", perm: "trade:read" },
+  { key: "orders", title: "订单管理", perm: "trade:read" },
+  { key: "contracts", title: "合同管理", perm: "trade:read" },
+  { grp: "结算与园区" },
+  { key: "settlements", title: "结算单", perm: "settlement:read" },
+  { key: "flows", title: "交易流水", perm: "settlement:read" },
+  { key: "parks", title: "园区与档口", perm: "park:read" },
+  { key: "trace", title: "溯源批次", perm: "trace:read" },
+  { grp: "系统" },
+  { key: "users", title: "用户管理", perm: "user:read" },
+  { key: "system", title: "系统状态", perm: null },
+];
+
+const state = { view: "dashboard", params: {}, children: [{}] };
+const can = (perm) => !perm || (store.user && (store.user.is_superuser || (store.user.permissions || []).includes(perm)));
+
+function buildNav() {
+  const nav = $("#nav");
+  nav.innerHTML = MENU.map((m) => {
+    if (m.grp) return `<div class="grp">${esc(m.grp)}</div>`;
+    if (!can(m.perm)) return "";
+    return `<a href="#/${m.key}" data-key="${m.key}" class="${state.view === m.key ? "active" : ""}">${esc(m.title)}</a>`;
+  }).join("");
+  nav.querySelectorAll("a").forEach((a) =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      location.hash = "#/" + a.dataset.key;
+    })
+  );
+}
+
+function currentMenu() {
+  return MENU.find((m) => m.key === state.view) || { title: "数据驾驶舱" };
+}
+
+async function route() {
+  const hash = (location.hash || "#/dashboard").replace(/^#\/?/, "");
+  const parts = hash.split("/").filter(Boolean);
+  const key = parts[0] || "dashboard";
+  const menu = MENU.find((m) => m.key === key);
+  if (!menu || (menu.perm && !can(menu.perm))) {
+    state.view = "dashboard";
+  } else {
+    state.view = key;
+  }
+  state.params = { id: parts[1] };
+  buildNav();
+  $("#pageTitle").textContent = currentMenu().title;
+  const view = $("#view");
+  view.innerHTML = `<div class="empty">加载中…</div>`;
+  try {
+    await (VIEWS[state.view] || VIEWS.dashboard)(view, state.params);
+  } catch (e) {
+    view.innerHTML = `<div class="card"><div class="body empty">加载失败：${esc(e.message)}</div></div>`;
+  }
+}
+
+/* =============================== 视图实现 =============================== */
+
+const VIEWS = {};
+
+/* ------------------------------ 数据驾驶舱 ------------------------------ */
+VIEWS.dashboard = async (root) => {
+  const [overview, trend, industry] = await Promise.all([
+    GET("/dashboard/overview", { refresh: true }),
+    GET("/dashboard/trend", { days: 14 }),
+    GET("/dashboard/industry"),
+  ]);
+  const kpi = (k, v, u) => `<div class="kpi"><div class="k">${esc(k)}</div><div class="v">${v}${u ? `<span class="u">${esc(u)}</span>` : ""}</div></div>`;
+  const max = Math.max(1, ...trend.order_amount.map((x) => Number(x)));
+  const bars = trend.dates
+    .map((d, i) => {
+      const amount = Number(trend.order_amount[i] || 0);
+      const h = Math.round((amount / max) * 140) + 2;
+      return `<div class="bar" style="height:${h}px" title="${d} 交易额 ${num(amount)} 元">
+        ${amount > 0 ? `<em>${Math.round(amount / 10000)}万</em>` : ""}<span>${d.slice(5)}</span></div>`;
+    })
+    .join("");
+  const industryRows = industry.by_category
+    .filter((r) => r.product_count > 0 || r.order_count > 0)
+    .map(
+      (r) => `<tr><td>${esc(r.name)}</td><td class="num">${int(r.product_count)}</td>
+      <td class="num">${num(r.inventory_quantity, 3)}</td>
+      <td class="num">${int(r.order_count)}</td>
+      <td class="num">${num(r.trade_amount)}</td></tr>`
+    )
+    .join("");
+  root.innerHTML = `
+    <div class="kpis" style="margin-bottom:16px">
+      ${kpi("入驻企业", int(overview.enterprise_count), "家")}
+      ${kpi("商户 / 供应商", int(overview.merchant_count) + " / " + int(overview.supplier_count), "家")}
+      ${kpi("商品数量", int(overview.product_count), "个（上架 " + int(overview.published_product_count) + "）")}
+      ${kpi("库存总量", num(overview.inventory_quantity, 3), "吨")}
+      ${kpi("库存货值", num(overview.inventory_value), "元")}
+      ${kpi("询价单", int(overview.inquiry_count), "单（待报价 " + int(overview.open_inquiry_count) + "）")}
+      ${kpi("订单总数", int(overview.order_count), "单")}
+      ${kpi("交易总额", num(overview.order_amount), "元")}
+      ${kpi("今日成交", num(overview.today_order_amount), "元")}
+      ${kpi("本月成交", num(overview.month_order_amount), "元")}
+      ${kpi("未结金额", num(overview.unsettled_amount), "元")}
+      ${kpi("档口出租率", (Number(overview.stall_rented_rate) * 100).toFixed(1), "%（" + int(overview.stall_rented) + "/" + int(overview.stall_count) + "）")}
+      ${kpi("待审企业", int(overview.pending_audit_enterprise), "家")}
+      ${kpi("待审商品", int(overview.pending_audit_product), "个")}
+    </div>
+    <div class="grid2">
+      <div class="card"><header><h3>近 14 日交易趋势</h3><div class="hint">按订单金额（万元）</div></header>
+        <div class="body"><div class="bars">${bars}</div><div style="height:22px"></div></div></div>
+      <div class="card"><header><h3>品类的产业分布</h3><div class="hint">实时聚合自业务表</div></header>
+        <div class="body"><div style="overflow:auto"><table>
+          <thead><tr><th>品类</th><th class="num">商品数</th><th class="num">库存(吨)</th><th class="num">订单数</th><th class="num">交易额(元)</th></tr></thead>
+          <tbody>${industryRows || `<tr><td colspan="5" class="empty">暂无数据</td></tr>`}</tbody>
+        </table></div></div></div>
+    </div>`;
+};
+
+/* -------------------------------- 商户档案 ------------------------------ */
+const entState = { page: 1, pageSize: 20, keyword: "", audit_status: "", enterprise_type: "" };
+VIEWS.enterprises = async (root) => {
+  const render = async () => {
+    const data = await GET("/enterprises", {
+      page: entState.page, page_size: entState.pageSize, keyword: entState.keyword,
+      audit_status: entState.audit_status, enterprise_type: entState.enterprise_type,
+    });
+    const rows = data.items.map((r) => ({ ...r }));
+    const card = tableCard({
+      title: "商户 / 企业档案",
+      hint: "平台→园区→企业→商户 四级组织；审核通过后自动建立组织单元并推送 Odoo",
+      toolbarHtml: `
+        <input placeholder="企业名称/编码/信用代码" value="${esc(entState.keyword)}" data-k />
+        <select data-t>
+          <option value="">全部类型</option>
+          ${Object.entries(DICT.enterprise_type).map(([k, v]) => `<option value="${k}" ${entState.enterprise_type === k ? "selected" : ""}>${v}</option>`).join("")}
+        </select>
+        <select data-a>
+          <option value="">全部审核状态</option>
+          <option value="pending" ${entState.audit_status === "pending" ? "selected" : ""}>待审核</option>
+          <option value="approved" ${entState.audit_status === "approved" ? "selected" : ""}>已通过</option>
+          <option value="rejected" ${entState.audit_status === "rejected" ? "selected" : ""}>已驳回</option>
+        </select>
+        <button class="btn" data-search>查询</button>
+        ${can("merchant:write") ? `<button class="btn primary" data-new>新增企业</button>` : ""}`,
+      columns: [
+        { title: "企业编码", render: (r) => `<span class="mono">${esc(r.code)}</span>` },
+        { title: "企业名称", render: (r) => esc(r.name) },
+        { title: "类型", render: (r) => tag("enterprise_type", r.enterprise_type) },
+        { title: "统一社会信用代码", render: (r) => `<span class="mono">${esc(r.unified_social_credit_code || "-")}</span>` },
+        { title: "联系人", render: (r) => `${esc(r.contact_name || "-")}<br /><span class="muted mono">${esc(r.contact_phone || "")}</span>` },
+        { title: "园区/档口", render: (r) => `${esc(r.park_name || "-")}<br /><span class="muted">${esc(r.stall_code || "")}</span>` },
+        { title: "审核", render: (r) => tag("audit_status", r.audit_status) },
+        { title: "操作", render: (r) => `
+            ${can("merchant:audit") && r.audit_status === "pending" ? `<button class="btn sm" data-audit="${r.id}" data-name="${esc(r.name)}">审核</button>` : ""}
+            <button class="btn sm" data-stat="${r.id}">经营统计</button>` },
+      ],
+      rows, state: { ...entState, total: data.total },
+      onGo: (p) => { entState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    root.appendChild(card);
+    card.querySelector("[data-k]").addEventListener("keydown", (e) => { if (e.key === "Enter") { entState.keyword = e.target.value.trim(); entState.page = 1; render(); } });
+    card.querySelector("[data-t]").addEventListener("change", (e) => { entState.enterprise_type = e.target.value; entState.page = 1; render(); });
+    card.querySelector("[data-a]").addEventListener("change", (e) => { entState.audit_status = e.target.value; entState.page = 1; render(); });
+    card.querySelector("[data-search]").addEventListener("click", () => { entState.keyword = card.querySelector("[data-k]").value.trim(); entState.page = 1; render(); });
+    const newBtn = card.querySelector("[data-new]");
+    if (newBtn) newBtn.addEventListener("click", () => enterpriseForm(render));
+    card.querySelectorAll("[data-audit]").forEach((b) =>
+      b.addEventListener("click", () => auditDialog(b.dataset.audit, b.dataset.name, render))
+    );
+    card.querySelectorAll("[data-stat]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        try {
+          const s = await GET(`/enterprises/${b.dataset.stat}/stats`);
+          openModal({
+            title: "企业经营统计 · " + s.enterprise_name,
+            okText: "关闭", onOk: () => true,
+            bodyHtml: `<div class="kpis">
+              <div class="kpi"><div class="k">商品数</div><div class="v">${int(s.product_count)}</div></div>
+              <div class="kpi"><div class="k">上架商品</div><div class="v">${int(s.published_product_count)}</div></div>
+              <div class="kpi"><div class="k">库存量(吨)</div><div class="v">${num(s.inventory_quantity, 3)}</div></div>
+              <div class="kpi"><div class="k">库存货值</div><div class="v">${num(s.inventory_value)}</div></div>
+              <div class="kpi"><div class="k">销售订单</div><div class="v">${int(s.sale_order_count)}</div></div>
+              <div class="kpi"><div class="k">销售额</div><div class="v">${num(s.sale_order_amount)}</div></div>
+              <div class="kpi"><div class="k">采购订单</div><div class="v">${int(s.purchase_order_count)}</div></div>
+              <div class="kpi"><div class="k">待结金额</div><div class="v">${num(s.pending_settlement_amount)}</div></div>
+            </div>`,
+          });
+        } catch (e) { toast(e.message, "err"); }
+      })
+    );
+  };
+  await render();
+};
+
+function enterpriseForm(onDone) {
+  openModal({
+    title: "新增企业 / 商户入驻",
+    okText: "提交",
+    width: 640,
+    bodyHtml: `<div class="form-row">
+      <div class="field"><label>企业名称 *</label><input name="name" /></div>
+      <div class="field"><label>统一社会信用代码</label><input name="unified_social_credit_code" /></div>
+      <div class="field"><label>企业类型 *</label><select name="enterprise_type">
+        <option value="merchant">商户</option><option value="supplier">供应商</option><option value="buyer">采购商</option></select></div>
+      <div class="field"><label>法定代表人</label><input name="legal_person" /></div>
+      <div class="field"><label>联系人</label><input name="contact_name" /></div>
+      <div class="field"><label>联系电话</label><input name="contact_phone" /></div>
+      <div class="field"><label>所在地区</label><input name="region" value="新疆生产建设兵团第十师北屯市" /></div>
+      <div class="field"><label>地址</label><input name="address" /></div>
+      <div class="field" style="grid-column:1/-1"><label>经营范围</label><input name="business_scope" /></div>
+      <div class="field" style="grid-column:1/-1"><label><input type="checkbox" name="create_account" checked style="width:auto" /> 同时创建登录账号</label></div>
+    </div>`,
+    onOk: async (modal) => {
+      const get = (n) => modal.querySelector(`[name="${n}"]`);
+      const body = {
+        name: get("name").value.trim(),
+        unified_social_credit_code: get("unified_social_credit_code").value.trim() || null,
+        enterprise_type: get("enterprise_type").value,
+        legal_person: get("legal_person").value.trim() || null,
+        contact_name: get("contact_name").value.trim() || null,
+        contact_phone: get("contact_phone").value.trim() || null,
+        region: get("region").value.trim() || null,
+        address: get("address").value.trim() || null,
+        business_scope: get("business_scope").value.trim() || null,
+        create_account: get("create_account").checked,
+      };
+      if (!body.name) { toast("请填写企业名称", "err"); return false; }
+      const created = await POST("/enterprises", body);
+      toast("已创建：" + created.code + (created.account_username ? "，账号 " + created.account_username : ""), "ok");
+      await onDone();
+    },
+  });
+}
+
+function auditDialog(id, name, onDone) {
+  openModal({
+    title: "企业审核 · " + name,
+    okText: "提交审核意见",
+    bodyHtml: `<div class="field"><label>审核结果</label><select name="approved">
+        <option value="true">资质齐全，审核通过</option><option value="false">驳回</option></select></div>
+      <div class="field"><label>审核意见</label><textarea name="remark" rows="3" style="width:100%"></textarea></div>`,
+    onOk: async (modal) => {
+      const approved = modal.querySelector('[name="approved"]').value === "true";
+      await POST(`/enterprises/${id}/audit`, { approved, remark: modal.querySelector('[name="remark"]').value.trim() || null });
+      toast(approved ? "审核通过，已建立组织并推送 Odoo" : "已驳回", "ok");
+      await onDone();
+    },
+  });
+}
+
+/* -------------------------------- 商品中心 ------------------------------ */
+const prodState = { page: 1, pageSize: 20, keyword: "", status: "", grade: "" };
+VIEWS.products = async (root) => {
+  const render = async () => {
+    const data = await GET("/products", {
+      page: prodState.page, page_size: prodState.pageSize,
+      keyword: prodState.keyword, status: prodState.status, grade: prodState.grade,
+    });
+    const card = tableCard({
+      title: "商品中心",
+      hint: "瓜子油料标准分类 · 规格/等级/产地/年份/包装 · 检测报告 · 库存可用量",
+      toolbarHtml: `
+        <input placeholder="商品名称/编码" value="${esc(prodState.keyword)}" data-k />
+        <select data-s><option value="">全部状态</option>
+          ${Object.entries(DICT.product_status).map(([k, v]) => `<option value="${k}" ${prodState.status === k ? "selected" : ""}>${v[0]}</option>`).join("")}
+        </select>
+        <select data-g><option value="">全部等级</option>
+          ${Object.entries(DICT.grade).map(([k, v]) => `<option value="${k}" ${prodState.grade === k ? "selected" : ""}>${v}</option>`).join("")}
+        </select>
+        <button class="btn" data-search>查询</button>
+        ${can("product:write") ? `<button class="btn primary" data-new>发布商品</button>` : ""}`,
+      columns: [
+        { title: "编码", render: (r) => `<span class="mono">${esc(r.code)}</span>` },
+        { title: "商品名称", render: (r) => `<b>${esc(r.name)}</b><br /><span class="muted">${esc(r.spec || "")}</span>` },
+        { title: "分类", render: (r) => esc(r.category_name || "-") },
+        { title: "等级", render: (r) => esc(dict("grade", r.grade)) },
+        { title: "产地/年份", render: (r) => `${esc(r.origin || "-")}<br /><span class="muted">${esc(r.harvest_year || "")} ${esc(r.package || "")}</span>` },
+        { title: "归属企业", render: (r) => esc(r.enterprise_name || "-") },
+        { title: "参考价", num: true, render: (r) => `${num(r.price)}<span class="muted"> 元/${esc(dict("unit", r.unit))}</span>` },
+        { title: "库存(可用/总)", num: true, render: (r) => `${num(r.available_quantity, 3)} / ${num(r.total_quantity, 3)}` },
+        { title: "质检", render: (r) => tag("quality_status", r.quality_status) },
+        { title: "状态", render: (r) => tag("product_status", r.status) + (r.audit_status !== "approved" ? " " + tag("audit_status", r.audit_status) : "") },
+        { title: "操作", render: (r) => `
+            ${can("product:audit") && r.audit_status === "pending" ? `<button class="btn sm" data-audit="${r.id}">审核</button>` : ""}
+            ${can("product:write") && r.status !== "published" && r.audit_status === "approved" ? `<button class="btn sm" data-pub="${r.id}">上架</button>` : ""}
+            ${can("product:write") && r.status === "published" ? `<button class="btn sm" data-off="${r.id}">下架</button>` : ""}
+            <button class="btn sm" data-inv="${r.id}">库存</button>` },
+      ],
+      rows: data.items, state: { ...prodState, total: data.total },
+      onGo: (p) => { prodState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    root.appendChild(card);
+    card.querySelector("[data-k]").addEventListener("keydown", (e) => { if (e.key === "Enter") { prodState.keyword = e.target.value.trim(); prodState.page = 1; render(); } });
+    card.querySelector("[data-s]").addEventListener("change", (e) => { prodState.status = e.target.value; prodState.page = 1; render(); });
+    card.querySelector("[data-g]").addEventListener("change", (e) => { prodState.grade = e.target.value; prodState.page = 1; render(); });
+    card.querySelector("[data-search]").addEventListener("click", () => { prodState.keyword = card.querySelector("[data-k]").value.trim(); prodState.page = 1; render(); });
+    const nb = card.querySelector("[data-new]");
+    if (nb) nb.addEventListener("click", () => productForm(render));
+    card.querySelectorAll("[data-pub]").forEach((b) => b.addEventListener("click", () => act(`/products/${b.dataset.pub}/publish`, "商品已上架", render)));
+    card.querySelectorAll("[data-off]").forEach((b) => b.addEventListener("click", () => act(`/products/${b.dataset.off}/offline`, "商品已下架", render)));
+    card.querySelectorAll("[data-audit]").forEach((b) =>
+      b.addEventListener("click", () =>
+        openModal({
+          title: "商品审核", okText: "提交",
+          bodyHtml: `<div class="field"><label>结果</label><select name="approved"><option value="true">通过</option><option value="false">驳回</option></select></div>
+            <div class="field"><label>意见</label><textarea name="remark" rows="3" style="width:100%"></textarea></div>`,
+          onOk: async (m) => {
+            await POST(`/products/${b.dataset.audit}/audit`, {
+              approved: m.querySelector('[name="approved"]').value === "true",
+              remark: m.querySelector('[name="remark"]').value.trim() || null,
+            });
+            toast("审核完成", "ok"); await render();
+          },
+        })
+      )
+    );
+    card.querySelectorAll("[data-inv]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const d = await GET(`/products/${b.dataset.inv}/inventory`);
+        openModal({
+          title: `库存分布 · ${d.product_name}（总 ${num(d.total_quantity, 3)} / 预占 ${num(d.locked_quantity, 3)} / 可用 ${num(d.available_quantity, 3)} 吨）`,
+          okText: "关闭", onOk: () => true,
+          bodyHtml: d.items.length
+            ? `<table><thead><tr><th>仓库</th><th>库位</th><th>批次</th><th class="num">数量</th><th class="num">可用</th><th class="num">成本</th></tr></thead>
+               <tbody>${d.items.map((i) => `<tr><td>${esc(i.warehouse_name)}</td><td>${esc(i.location_name || "-")}</td>
+               <td class="mono">${esc(i.batch_no)}</td><td class="num">${num(i.quantity, 3)}</td>
+               <td class="num">${num(i.available_quantity, 3)}</td><td class="num">${num(i.unit_cost)}</td></tr>`).join("")}</tbody></table>`
+            : `<div class="empty">该商品暂无库存记录</div>`,
+        });
+      })
+    );
+  };
+  await render();
+};
+
+async function act(path, okMsg, onDone, body) {
+  try {
+    await POST(path, body);
+    toast(okMsg, "ok");
+    await onDone();
+  } catch (e) { toast(e.message, "err"); }
+}
+
+async function productForm(onDone) {
+  const tree = await GET("/categories/tree");
+  const options = [];
+  const walk = (nodes, depth) => nodes.forEach((n) => {
+    options.push(`<option value="${n.id}">${"　".repeat(depth)}${esc(n.name)}</option>`);
+    if (n.children) walk(n.children, depth + 1);
+  });
+  walk(tree, 0);
+  openModal({
+    title: "发布商品",
+    okText: "创建",
+    width: 720,
+    bodyHtml: `<div class="form-row">
+      <div class="field" style="grid-column:1/-1"><label>商品名称 *</label><input name="name" placeholder="如：新疆特级葵花籽（食葵）" /></div>
+      <div class="field"><label>商品分类 *</label><select name="category_id">${options.join("")}</select></div>
+      <div class="field"><label>规格</label><input name="spec" placeholder="千粒重≥180g，水分≤9%" /></div>
+      <div class="field"><label>等级</label><select name="grade">
+        <option value="special">特级</option><option value="first">一级</option><option value="second">二级</option><option value="mixed">统货</option></select></div>
+      <div class="field"><label>产地</label><input name="origin" value="新疆阿勒泰" /></div>
+      <div class="field"><label>年份</label><input name="harvest_year" value="2025" /></div>
+      <div class="field"><label>包装</label><input name="package" value="50kg 编织袋" /></div>
+      <div class="field"><label>计量单位</label><select name="unit"><option value="ton">吨</option><option value="kg">千克</option><option value="bag">袋</option></select></div>
+      <div class="field"><label>参考价（元/单位）</label><input name="price" type="number" step="0.01" value="6800" /></div>
+      <div class="field"><label>起订量</label><input name="min_order_qty" type="number" step="0.001" value="5" /></div>
+      <div class="field"><label>库存预警值</label><input name="stock_warn_qty" type="number" step="0.001" value="20" /></div>
+      <div class="field"><label>质检状态</label><select name="quality_status">
+        <option value="qualified">合格</option><option value="pending">待检</option><option value="unqualified">不合格</option></select></div>
+      <div class="field" style="grid-column:1/-1"><label>商品详情</label><textarea name="description" rows="3" style="width:100%"></textarea></div>
+    </div>
+    <div class="tip">创建后进入「待审核」，平台审核通过后方可上架。商品图片与检测报告可在详情页通过文件上传接口补充。</div>`,
+    onOk: async (m) => {
+      const g = (n) => m.querySelector(`[name="${n}"]`);
+      const body = {
+        name: g("name").value.trim(),
+        category_id: Number(g("category_id").value),
+        spec: g("spec").value.trim() || null,
+        grade: g("grade").value,
+        origin: g("origin").value.trim() || null,
+        harvest_year: g("harvest_year").value.trim() || null,
+        package: g("package").value.trim() || null,
+        unit: g("unit").value,
+        price: Number(g("price").value || 0),
+        min_order_qty: Number(g("min_order_qty").value || 0),
+        stock_warn_qty: Number(g("stock_warn_qty").value || 0),
+        quality_status: g("quality_status").value,
+        description: g("description").value.trim() || null,
+      };
+      if (!body.name) { toast("请填写商品名称", "err"); return false; }
+      const created = await POST("/products", body);
+      toast("已创建商品 " + created.code + "，待平台审核", "ok");
+      await onDone();
+    },
+  });
+}
+
+/* -------------------------------- 商品分类 ------------------------------ */
+VIEWS.categories = async (root) => {
+  const tree = await GET("/categories/tree");
+  const rows = [];
+  const walk = (nodes, depth) => nodes.forEach((n) => {
+    rows.push(
+      `<tr><td>${"　".repeat(depth)}${esc(n.name)}</td><td class="mono">${esc(n.code)}</td>
+       <td class="num">${int(n.product_count)}</td><td>${esc(n.status)}</td>
+       <td>${can("product:write") ? `<button class="btn sm" data-del="${n.id}">删除</button>` : ""}</td></tr>`
+    );
+    if (n.children && n.children.length) walk(n.children, depth + 1);
+  });
+  walk(tree, 0);
+  root.innerHTML = `
+    <div class="card"><header><h3>商品分类树（瓜子油料标准分类）</h3>
+      <div class="toolbar">${can("product:write") ? `<button class="btn primary" data-add>新增分类</button>` : ""}</div></header>
+      <div class="body"><div style="overflow:auto"><table>
+        <thead><tr><th>分类名称</th><th>编码</th><th class="num">商品数</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>${rows.join("")}</tbody></table></div></div></div>`;
+  const addBtn = root.querySelector("[data-add]");
+  if (addBtn)
+    addBtn.addEventListener("click", async () => {
+      const flat = [];
+      const w = (nodes, d) => nodes.forEach((n) => { flat.push(`<option value="${n.id}">${"　".repeat(d)}${esc(n.name)}</option>`); if (n.children) w(n.children, d + 1); });
+      w(tree, 0);
+      openModal({
+        title: "新增分类", okText: "创建",
+        bodyHtml: `<div class="field"><label>分类名称 *</label><input name="name" /></div>
+          <div class="field"><label>上级分类</label><select name="parent_id"><option value="">（作为顶级分类）</option>${flat.join("")}</select></div>
+          <div class="field"><label>排序</label><input name="sort" type="number" value="0" /></div>`,
+        onOk: async (m) => {
+          const name = m.querySelector('[name="name"]').value.trim();
+          if (!name) { toast("请填写分类名称", "err"); return false; }
+          const parent = m.querySelector('[name="parent_id"]').value;
+          await POST("/categories", { name, parent_id: parent ? Number(parent) : null, sort: Number(m.querySelector('[name="sort"]').value || 0) });
+          toast("分类已创建", "ok");
+          await route();
+        },
+      });
+    });
+  root.querySelectorAll("[data-del]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      try { await DEL(`/categories/${b.dataset.del}`); toast("已删除", "ok"); await route(); }
+      catch (e) { toast(e.message, "err"); }
+    })
+  );
+};
+
+/* -------------------------------- 库存管理 ------------------------------ */
+const invState = { page: 1, pageSize: 20, keyword: "" };
+VIEWS.inventory = async (root) => {
+  const render = async () => {
+    const [data, warehouses] = await Promise.all([
+      GET("/inventory", { page: invState.page, page_size: invState.pageSize, keyword: invState.keyword }),
+      GET("/warehouses"),
+    ]);
+    const card = tableCard({
+      title: "库存明细（仓库 / 库位 / 批次）",
+      hint: "账面数量 - 交易预占 = 可用数量；预占由订单生成，出库由订单确认触发",
+      toolbarHtml: `<input placeholder="商品名称/编码" value="${esc(invState.keyword)}" data-k />
+        <button class="btn" data-search>查询</button>
+        ${can("inventory:execute") ? `<button class="btn primary" data-in>入库</button><button class="btn" data-out>出库</button>` : ""}
+        ${can("inventory:write") ? `<button class="btn" data-wh>仓库管理</button>` : ""}`,
+      columns: [
+        { title: "商品", render: (r) => `<b>${esc(r.product_name)}</b><br /><span class="muted mono">${esc(r.product_code || "")}</span>` },
+        { title: "仓库/库位", render: (r) => `${esc(r.warehouse_name)}<br /><span class="muted">${esc(r.location_name || "-")}</span>` },
+        { title: "批次", render: (r) => `<span class="mono">${esc(r.batch_no)}</span>` },
+        { title: "账面数量", num: true, render: (r) => num(r.quantity, 3) },
+        { title: "预占", num: true, render: (r) => num(r.locked_quantity, 3) },
+        { title: "可用", num: true, render: (r) => `<b>${num(r.available_quantity, 3)}</b>` },
+        { title: "单位成本", num: true, render: (r) => num(r.unit_cost) },
+        { title: "库存金额", num: true, render: (r) => num(r.amount) },
+        { title: "质检", render: (r) => tag("quality_status", r.quality_status) },
+        { title: "更新时间", render: (r) => `<span class="muted">${dt(r.updated_at)}</span>` },
+      ],
+      rows: data.items, state: { ...invState, total: data.total },
+      onGo: (p) => { invState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    root.appendChild(card);
+    card.querySelector("[data-k]").addEventListener("keydown", (e) => { if (e.key === "Enter") { invState.keyword = e.target.value.trim(); invState.page = 1; render(); } });
+    card.querySelector("[data-search]").addEventListener("click", () => { invState.keyword = card.querySelector("[data-k]").value.trim(); invState.page = 1; render(); });
+    const inBtn = card.querySelector("[data-in]");
+    if (inBtn) inBtn.addEventListener("click", () => stockDialog("in", warehouses, render));
+    const outBtn = card.querySelector("[data-out]");
+    if (outBtn) outBtn.addEventListener("click", () => stockDialog("out", warehouses, render));
+    const whBtn = card.querySelector("[data-wh]");
+    if (whBtn) whBtn.addEventListener("click", () => warehouseDialog(render));
+  };
+  await render();
+};
+
+async function stockDialog(kind, warehouses, onDone) {
+  const products = await GET("/products", { page_size: 200 });
+  openModal({
+    title: kind === "in" ? "商品入库" : "商品出库",
+    okText: kind === "in" ? "确认入库" : "确认出库",
+    bodyHtml: `<div class="form-row">
+      <div class="field" style="grid-column:1/-1"><label>商品 *</label><select name="product_id">
+        ${products.items.map((p) => `<option value="${p.id}">${esc(p.name)}（可用 ${num(p.available_quantity, 3)} 吨）</option>`).join("")}
+      </select></div>
+      <div class="field"><label>仓库 *</label><select name="warehouse_id">
+        ${warehouses.map((w) => `<option value="${w.id}">${esc(w.name)}</option>`).join("")}
+      </select></div>
+      <div class="field"><label>批次号</label><input name="batch_no" value="DEFAULT" /></div>
+      <div class="field"><label>数量（吨）*</label><input name="quantity" type="number" step="0.001" value="10" /></div>
+      ${kind === "in" ? `<div class="field"><label>单位成本（元/吨）</label><input name="unit_cost" type="number" step="0.01" value="6000" /></div>
+      <div class="field"><label>质检状态</label><select name="quality_status"><option value="qualified">合格</option><option value="pending">待检</option></select></div>` : ""}
+      <div class="field" style="grid-column:1/-1"><label>备注</label><input name="remark" /></div>
+    </div>`,
+    onOk: async (m) => {
+      const g = (n) => m.querySelector(`[name="${n}"]`);
+      const body = {
+        product_id: Number(g("product_id").value),
+        warehouse_id: Number(g("warehouse_id").value),
+        batch_no: g("batch_no").value.trim() || "DEFAULT",
+        quantity: Number(g("quantity").value),
+      };
+      if (!(body.quantity > 0)) { toast("数量必须大于 0", "err"); return false; }
+      if (kind === "in") {
+        body.unit_cost = Number(g("unit_cost").value || 0);
+        body.quality_status = g("quality_status").value;
+      }
+      body.remark = g("remark").value.trim() || null;
+      await POST(`/inventory/${kind}`, body);
+      toast(kind === "in" ? "入库成功，已生成库存流水" : "出库成功，已生成库存流水", "ok");
+      await onDone();
+    },
+  });
+}
+
+async function warehouseDialog(onDone) {
+  const list = await GET("/warehouses");
+  openModal({
+    title: "仓库与库位", okText: "关闭", onOk: () => true, width: 720,
+    bodyHtml: `
+      <table><thead><tr><th>编码</th><th>仓库</th><th>归属企业</th><th class="num">库位数</th><th class="num">库存量(吨)</th><th>操作</th></tr></thead>
+      <tbody>${list.map((w) => `<tr><td class="mono">${esc(w.code)}</td><td>${esc(w.name)}</td><td>${esc(w.enterprise_name || "-")}</td>
+        <td class="num">${int(w.location_count)}</td><td class="num">${num(w.inventory_quantity, 3)}</td>
+        <td><button class="btn sm" data-loc="${w.id}">库位</button></td></tr>`).join("")}</tbody></table>
+      <div class="tip">新增仓库与库位请调用 <span class="mono">POST /api/v1/warehouses</span> 与 <span class="mono">POST /api/v1/warehouses/{id}/locations</span>，或在移动端完成。</div>`,
+  });
+  const root = $("#modalRoot");
+  root.querySelectorAll("[data-loc]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const locs = await GET(`/warehouses/${b.dataset.loc}/locations`);
+      openModal({
+        title: "库位列表", okText: "关闭", onOk: () => true,
+        bodyHtml: locs.length
+          ? `<table><thead><tr><th>编码</th><th>名称</th><th>区</th><th class="num">容量</th></tr></thead>
+             <tbody>${locs.map((l) => `<tr><td class="mono">${esc(l.code)}</td><td>${esc(l.name)}</td><td>${esc(l.zone || "-")}</td><td class="num">${num(l.capacity, 3)}</td></tr>`).join("")}</tbody></table>`
+          : `<div class="empty">该仓库暂无库位</div>`,
+      });
+    })
+  );
+}
+
+/* -------------------------------- 库存流水 ------------------------------ */
+const moveState = { page: 1, pageSize: 20, move_type: "" };
+VIEWS.moves = async (root) => {
+  const render = async () => {
+    const [data, warnings] = await Promise.all([
+      GET("/inventory/moves", { page: moveState.page, page_size: moveState.pageSize, move_type: moveState.move_type }),
+      GET("/inventory/warnings"),
+    ]);
+    const card = tableCard({
+      title: "出入库流水",
+      hint: "所有库存变动均落库留痕，可反向追溯至订单/盘点/调拨单据",
+      toolbarHtml: `<select data-t><option value="">全部类型</option>
+          ${Object.entries(DICT.move_type).map(([k, v]) => `<option value="${k}" ${moveState.move_type === k ? "selected" : ""}>${v}</option>`).join("")}
+        </select>`,
+      columns: [
+        { title: "流水号", render: (r) => `<span class="mono">${esc(r.move_no)}</span>` },
+        { title: "类型", render: (r) => esc(dict("move_type", r.move_type)) },
+        { title: "商品", render: (r) => esc(r.product_name || "-") },
+        { title: "仓库", render: (r) => `${esc(r.warehouse_name || "-")}${r.to_warehouse_name ? " → " + esc(r.to_warehouse_name) : ""}` },
+        { title: "批次", render: (r) => `<span class="mono">${esc(r.batch_no || "-")}</span>` },
+        { title: "数量", num: true, render: (r) => num(r.quantity, 3) },
+        { title: "关联单据", render: (r) => `${esc(r.ref_type || "-")}<br /><span class="muted mono">${esc(r.ref_no || "")}</span>` },
+        { title: "操作人", render: (r) => esc(r.operator_name || "-") },
+        { title: "时间", render: (r) => `<span class="muted">${dt(r.created_at)}</span>` },
+      ],
+      rows: data.items, state: { ...moveState, total: data.total },
+      onGo: (p) => { moveState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    if (warnings.length) {
+      const warnCard = document.createElement("div");
+      warnCard.className = "card";
+      warnCard.innerHTML = `<header><h3>库存预警</h3><div class="hint">可用库存低于预警值</div></header>
+        <div class="body"><table><thead><tr><th>商品</th><th class="num">预警值</th><th class="num">可用库存</th><th>单位</th></tr></thead>
+        <tbody>${warnings.map((w) => `<tr><td>${esc(w.product_name)}</td><td class="num">${num(w.warn_qty, 3)}</td>
+        <td class="num" style="color:var(--danger)"><b>${num(w.available_quantity, 3)}</b></td><td>${esc(dict("unit", w.unit))}</td></tr>`).join("")}</tbody></table></div>`;
+      root.appendChild(warnCard);
+    }
+    root.appendChild(card);
+    card.querySelector("[data-t]").addEventListener("change", (e) => { moveState.move_type = e.target.value; moveState.page = 1; render(); });
+  };
+  await render();
+};
+
+/* ------------------------------ 询价与报价 ------------------------------ */
+const inqState = { page: 1, pageSize: 20, role: "supplier", status: "" };
+VIEWS.inquiries = async (root) => {
+  const render = async () => {
+    const data = await GET("/inquiries", { page: inqState.page, page_size: inqState.pageSize, role: inqState.role, status: inqState.status });
+    const card = tableCard({
+      title: "询价与报价",
+      hint: "采购商发起询价 → 供应商报价 → 采购商接受报价自动生成订单",
+      toolbarHtml: `<select data-r>
+          <option value="supplier" ${inqState.role === "supplier" ? "selected" : ""}>待我报价 / 我参与的</option>
+          <option value="buyer" ${inqState.role === "buyer" ? "selected" : ""}>我发出的询价</option></select>
+        <select data-s><option value="">全部状态</option>
+          ${Object.entries(DICT.inquiry_status).map(([k, v]) => `<option value="${k}" ${inqState.status === k ? "selected" : ""}>${v[0]}</option>`).join("")}</select>`,
+      columns: [
+        { title: "询价单号", render: (r) => `<span class="mono">${esc(r.inquiry_no)}</span>` },
+        { title: "商品", render: (r) => `<b>${esc(r.product_name || "-")}</b><br /><span class="muted">${esc(r.spec || "")}</span>` },
+        { title: "采购商", render: (r) => esc(r.buyer_enterprise_name || "-") },
+        { title: "供应商", render: (r) => esc(r.supplier_enterprise_name || "（公开询价）") },
+        { title: "数量", num: true, render: (r) => `${num(r.quantity, 3)} ${esc(dict("unit", r.unit))}` },
+        { title: "期望价", num: true, render: (r) => num(r.expect_price) },
+        { title: "报价数", num: true, render: (r) => int(r.quoted_count) },
+        { title: "状态", render: (r) => tag("inquiry_status", r.status) },
+        { title: "操作", render: (r) => `<button class="btn sm" data-detail="${r.id}">详情/报价</button>` },
+      ],
+      rows: data.items, state: { ...inqState, total: data.total },
+      onGo: (p) => { inqState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    root.appendChild(card);
+    card.querySelector("[data-r]").addEventListener("change", (e) => { inqState.role = e.target.value; inqState.page = 1; render(); });
+    card.querySelector("[data-s]").addEventListener("change", (e) => { inqState.status = e.target.value; inqState.page = 1; render(); });
+    card.querySelectorAll("[data-detail]").forEach((b) =>
+      b.addEventListener("click", () => inquiryDetail(b.dataset.detail, render))
+    );
+  };
+  await render();
+};
+
+async function inquiryDetail(id, onDone) {
+  const d = await GET(`/inquiries/${id}`);
+  const rows = d.quotations.map((q) => `<tr>
+      <td class="mono">${esc(q.quotation_no)}</td><td>${esc(q.supplier_enterprise_name || "-")}</td>
+      <td class="num">${num(q.unit_price)}</td><td class="num">${num(q.quantity, 3)}</td>
+      <td class="num">${num(q.amount)}</td><td>${tag("quotation_status", q.status)}</td>
+      <td>${q.status === "submitted" && can("trade:write") ? `<button class="btn sm primary" data-accept="${q.id}">接受并生成订单</button>` : ""}</td></tr>`).join("");
+  openModal({
+    title: `询价单 ${d.inquiry_no}`,
+    okText: "关闭", onOk: () => true, width: 760,
+    bodyHtml: `<div class="kpis" style="margin-bottom:12px">
+        <div class="kpi"><div class="k">商品</div><div class="v" style="font-size:15px">${esc(d.product_name || "-")}</div></div>
+        <div class="kpi"><div class="k">数量</div><div class="v">${num(d.quantity, 3)}<span class="u">${esc(dict("unit", d.unit))}</span></div></div>
+        <div class="kpi"><div class="k">期望价</div><div class="v">${num(d.expect_price)}</div></div>
+        <div class="kpi"><div class="k">状态</div><div class="v" style="font-size:15px">${tag("inquiry_status", d.status)}</div></div>
+      </div>
+      <table><thead><tr><th>报价单号</th><th>供应商</th><th class="num">单价</th><th class="num">数量</th><th class="num">金额</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" class="empty">暂无报价</td></tr>`}</tbody></table>
+      ${can("trade:write") && d.status !== "confirmed" && d.status !== "cancelled"
+        ? `<div class="tip" style="margin-top:14px">
+             <div class="form-row">
+               <div class="field"><label>本企业报价单价（元/${esc(dict("unit", d.unit))}）</label><input name="unit_price" type="number" step="0.01" value="${Number(d.expect_price || 0) || ""}" /></div>
+               <div class="field"><label>税率</label><input name="tax_rate" type="number" step="0.01" value="0.09" /></div>
+               <div class="field"><label>付款条件</label><input name="payment_terms" value="货到验收合格后 15 个工作日内电汇" /></div>
+             </div>
+             <button class="btn primary" data-quote>提交报价</button>
+           </div>`
+        : ""}`,
+  });
+  const root = $("#modalRoot");
+  root.querySelectorAll("[data-accept]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      try {
+        const order = await POST(`/quotations/${b.dataset.accept}/accept`);
+        toast("已生成订单 " + order.order_no + "，库存已预占", "ok");
+        $("#modalRoot").innerHTML = "";
+        await onDone();
+      } catch (e) { toast(e.message, "err"); }
+    })
+  );
+  const quoteBtn = root.querySelector("[data-quote]");
+  if (quoteBtn)
+    quoteBtn.addEventListener("click", async () => {
+      const m = root.querySelector(".modal");
+      const price = Number(m.querySelector('[name="unit_price"]').value);
+      if (!(price > 0)) { toast("请填写报价单价", "err"); return; }
+      try {
+        await POST(`/inquiries/${id}/quotations`, {
+          unit_price: price,
+          tax_rate: Number(m.querySelector('[name="tax_rate"]').value || 0),
+          payment_terms: m.querySelector('[name="payment_terms"]').value.trim() || null,
+        });
+        toast("报价提交成功", "ok");
+        $("#modalRoot").innerHTML = "";
+        await onDone();
+      } catch (e) { toast(e.message, "err"); }
+    });
+}
+
+/* -------------------------------- 订单管理 ------------------------------ */
+const orderState = { page: 1, pageSize: 20, role: "all", status: "", keyword: "" };
+VIEWS.orders = async (root) => {
+  const render = async () => {
+    const data = await GET("/orders", { page: orderState.page, page_size: orderState.pageSize, role: orderState.role, status: orderState.status, keyword: orderState.keyword });
+    const card = tableCard({
+      title: "订单管理",
+      hint: "待确认 → 供应商确认（扣库存）→ 发货 → 完成（生成结算单）",
+      toolbarHtml: `<select data-r>
+          <option value="all" ${orderState.role === "all" ? "selected" : ""}>全部角色</option>
+          <option value="buyer" ${orderState.role === "buyer" ? "selected" : ""}>我的采购</option>
+          <option value="supplier" ${orderState.role === "supplier" ? "selected" : ""}>我的销售</option></select>
+        <select data-s><option value="">全部状态</option>
+          ${Object.entries(DICT.order_status).map(([k, v]) => `<option value="${k}" ${orderState.status === k ? "selected" : ""}>${v[0]}</option>`).join("")}</select>
+        <input placeholder="订单号" value="${esc(orderState.keyword)}" data-k /><button class="btn" data-search>查询</button>`,
+      columns: [
+        { title: "订单号", render: (r) => `<span class="mono">${esc(r.order_no)}</span>` },
+        { title: "采购方", render: (r) => esc(r.buyer_enterprise_name || "-") },
+        { title: "供应方", render: (r) => esc(r.supplier_enterprise_name || "-") },
+        { title: "明细", render: (r) => `${int(r.item_count)} 项 / ${num(r.total_quantity, 3)} 吨` },
+        { title: "金额（含税）", num: true, render: (r) => `<b>${num(r.total_amount)}</b>` },
+        { title: "库存扣减", render: (r) => (r.stock_deducted ? `<span class="tag green">已扣减</span>` : `<span class="tag gray">未扣减</span>`) },
+        { title: "状态", render: (r) => tag("order_status", r.status) },
+        { title: "创建时间", render: (r) => `<span class="muted">${dt(r.created_at)}</span>` },
+        { title: "操作", render: (r) => `<button class="btn sm" data-detail="${r.id}">详情</button>` },
+      ],
+      rows: data.items, state: { ...orderState, total: data.total },
+      onGo: (p) => { orderState.page = p; render(); },
+    });
+    root.innerHTML = "";
+    root.appendChild(card);
+    card.querySelector("[data-r]").addEventListener("change", (e) => { orderState.role = e.target.value; orderState.page = 1; render(); });
+    card.querySelector("[data-s]").addEventListener("change", (e) => { orderState.status = e.target.value; orderState.page = 1; render(); });
+    card.querySelector("[data-search]").addEventListener("click", () => { orderState.keyword = card.querySelector("[data-k]").value.trim(); orderState.page = 1; render(); });
+    card.querySelectorAll("[data-detail]").forEach((b) => b.addEventListener("click", () => orderDetail(b.dataset.detail, render)));
+  };
+  await render();
+};
+
+async function orderDetail(id, onDone) {
+  const [d, timeline] = await Promise.all([GET(`/orders/${id}`), GET(`/orders/${id}/timeline`)]);
+  const items = d.items.map((i) => `<tr><td>${esc(i.product_name || "-")}<br /><span class="muted">${esc(i.spec || "")}</span></td>
+      <td class="mono">${esc(i.batch_no || "-")}</td><td class="num">${num(i.quantity, 3)}</td>
+      <td class="num">${num(i.delivered_quantity, 3)}</td><td class="num">${num(i.unit_price)}</td>
+      <td class="num">${num(i.amount)}</td></tr>`).join("");
+  const steps = timeline.map((t) => `<div style="padding:6px 0;border-bottom:1px dashed var(--line)">
+      <b>${esc(t.title)}</b> <span class="muted">${dt(t.occurred_at)}</span><br /><span class="muted">${esc(t.description || "")}</span></div>`).join("");
+  const actions = [];
+  if (can("trade:write")) {
+    if (d.status === "pending_confirm") {
+      actions.push(`<button class="btn primary" data-act="confirm">供应商确认订单</button>`);
+      actions.push(`<button class="btn danger" data-act="cancel">取消订单</button>`);
+    }
+    if (d.status === "confirmed") {
+      actions.push(`<button class="btn primary" data-act="deliver">发货</button>`);
+      actions.push(`<button class="btn" data-act="complete">直接完成</button>`);
+      actions.push(`<button class="btn danger" data-act="cancel">取消订单</button>`);
+    }
+    if (d.status === "delivering") actions.push(`<button class="btn primary" data-act="complete">订单完成</button>`);
+    if (d.status === "draft") actions.push(`<button class="btn danger" data-act="cancel">取消订单</button>`);
+    if (d.status === "completed" && !d.contract_id) actions.push(`<button class="btn" data-act="contract">生成合同</button>`);
+  }
+  openModal({
+    title: `订单 ${d.order_no}`,
+    okText: "关闭", onOk: () => true, width: 860,
+    bodyHtml: `<div class="kpis" style="margin-bottom:12px">
+        <div class="kpi"><div class="k">状态</div><div class="v" style="font-size:15px">${tag("order_status", d.status)}</div></div>
+        <div class="kpi"><div class="k">货款</div><div class="v">${num(d.amount)}</div></div>
+        <div class="kpi"><div class="k">税额</div><div class="v">${num(d.tax_amount)}</div></div>
+        <div class="kpi"><div class="k">价税合计</div><div class="v">${num(d.total_amount)}</div></div>
+      </div>
+      <div class="muted" style="margin-bottom:8px">
+        采购方：${esc(d.buyer_enterprise_name || "-")}　供应方：${esc(d.supplier_enterprise_name || "-")}<br />
+        交货日期：${day(d.delivery_date)}　收货地址：${esc(d.delivery_address || "-")}　
+        物流：${esc(d.logistics_company || "-")} ${esc(d.logistics_no || "")}
+      </div>
+      <table><thead><tr><th>商品</th><th>批次</th><th class="num">数量</th><th class="num">已发</th><th class="num">单价</th><th class="num">金额</th></tr></thead><tbody>${items}</tbody></table>
+      <h4 style="margin:16px 0 6px">状态轨迹</h4>${steps || `<div class="empty">暂无轨迹</div>`}
+      ${actions.length ? `<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">${actions.join("")}</div>` : ""}`,
+  });
+  const root = $("#modalRoot");
+  root.querySelectorAll("[data-act]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const kind = b.dataset.act;
+      try {
+        if (kind === "confirm") await POST(`/orders/${id}/confirm`);
+        else if (kind === "deliver")
+          await POST(`/orders/${id}/deliver`, {
+            items: d.items.map((i) => ({ item_id: i.id, delivered_quantity: i.quantity })),
+            logistics_company: "北屯物流有限公司",
+            logistics_no: "BTWL" + String(Date.now()).slice(-8),
+          });
+        else if (kind === "complete") await POST(`/orders/${id}/complete`);
+        else if (kind === "cancel") await POST(`/orders/${id}/cancel`, { reason: "控制台操作取消" });
+        else if (kind === "contract") await POST("/contracts", { order_id: id });
+        toast("操作成功", "ok");
+        $("#modalRoot").innerHTML = "";
+        await onDone();
+      } catch (e) { toast(e.message, "err"); }
+    })
+  );
+}
+
+/* -------------------------------- 合同管理 ------------------------------ */
+VIEWS.contracts = async (root) => {
+  const data = await GET("/contracts", { page: 1, page_size: 30 });
+  const card = tableCard({
+    title: "合同管理",
+    hint: "由订单生成，买卖双方在线签署后自动生效",
+    columns: [
+      { title: "合同编号", render: (r) => `<span class="mono">${esc(r.contract_no)}</span>` },
+      { title: "标题", render: (r) => esc(r.title) },
+      { title: "关联订单", render: (r) => esc(r.order_no || "-") },
+      { title: "买方", render: (r) => esc(r.buyer_enterprise_name || "-") },
+      { title: "卖方", render: (r) => esc(r.supplier_enterprise_name || "-") },
+      { title: "金额", num: true, render: (r) => num(r.amount) },
+      { title: "签署", render: (r) => `${r.signed_by_buyer ? "买方✔" : "买方✘"} / ${r.signed_by_supplier ? "卖方✔" : "卖方✘"}` },
+      { title: "状态", render: (r) => `<span class="tag ${r.status === "effective" ? "green" : "orange"}">${esc(r.status)}</span>` },
+      { title: "操作", render: (r) => can("trade:write") && r.status !== "effective"
+        ? `<button class="btn sm" data-sign="${r.id}" data-party="supplier">卖方签署</button>
+           <button class="btn sm" data-sign="${r.id}" data-party="buyer">买方签署</button>` : "" },
+    ],
+    rows: data.items,
+  });
+  root.innerHTML = "";
+  root.appendChild(card);
+  card.querySelectorAll("[data-sign]").forEach((b) =>
+    b.addEventListener("click", () => act(`/contracts/${b.dataset.sign}/sign`, "签署成功", route, { party: b.dataset.party }))
+  );
+};
+
+/* -------------------------------- 结算单 -------------------------------- */
+VIEWS.settlements = async (root) => {
+  const data = await GET("/settlements", { page: 1, page_size: 30 });
+  const card = tableCard({
+    title: "结算单",
+    hint: "平台不自建支付通道，只做结算单与交易流水登记，资金走银行",
+    columns: [
+      { title: "结算单号", render: (r) => `<span class="mono">${esc(r.settlement_no)}</span>` },
+      { title: "企业", render: (r) => esc(r.enterprise_name || "-") },
+      { title: "类型", render: (r) => esc(dict("settle_type", r.settle_type)) },
+      { title: "货款", num: true, render: (r) => num(r.order_amount) },
+      { title: "平台服务费", num: true, render: (r) => num(r.fee_amount) },
+      { title: "应结金额", num: true, render: (r) => `<b>${num(r.settle_amount)}</b>` },
+      { title: "已结", num: true, render: (r) => num(r.settled_amount) },
+      { title: "未结", num: true, render: (r) => num(r.unpaid_amount) },
+      { title: "回款", render: (r) => tag("pay_status", r.pay_status) },
+      { title: "状态", render: (r) => tag("settle_status", r.status) },
+      { title: "操作", render: (r) => can("settlement:write") && r.status !== "settled"
+        ? `${r.status === "pending" ? `<button class="btn sm" data-confirm="${r.id}">确认</button>` : ""}
+           <button class="btn sm primary" data-pay="${r.id}" data-left="${r.unpaid_amount}">登记回款</button>` : "" },
+    ],
+    rows: data.items,
+  });
+  root.innerHTML = "";
+  root.appendChild(card);
+  card.querySelectorAll("[data-confirm]").forEach((b) =>
+    b.addEventListener("click", () => act(`/settlements/${b.dataset.confirm}/confirm`, "结算单已确认", route))
+  );
+  card.querySelectorAll("[data-pay]").forEach((b) =>
+    b.addEventListener("click", () =>
+      openModal({
+        title: "登记回款", okText: "提交",
+        bodyHtml: `<div class="field"><label>回款金额 *</label><input name="amount" type="number" step="0.01" value="${b.dataset.left}" /></div>
+          <div class="field"><label>回款方式</label><select name="pay_method"><option value="bank_transfer">银行转账</option><option value="offline">线下结算</option><option value="other">其他</option></select></div>
+          <div class="field"><label>银行回单号</label><input name="trade_no" /></div>
+          <div class="field"><label>备注</label><input name="remark" /></div>`,
+        onOk: async (m) => {
+          const body = {
+            amount: Number(m.querySelector('[name="amount"]').value),
+            pay_method: m.querySelector('[name="pay_method"]').value,
+            trade_no: m.querySelector('[name="trade_no"]').value.trim() || null,
+            remark: m.querySelector('[name="remark"]').value.trim() || null,
+          };
+          if (!(body.amount > 0)) { toast("金额必须大于 0", "err"); return false; }
+          await POST(`/settlements/${b.dataset.pay}/payment`, body);
+          toast("回款已登记", "ok");
+          await route();
+        },
+      })
+    )
+  );
+};
+
+/* -------------------------------- 交易流水 ------------------------------ */
+VIEWS.flows = async (root) => {
+  const data = await GET("/finance/flows", { page: 1, page_size: 30 });
+  const card = tableCard({
+    title: "交易流水",
+    hint: "订单确认即生成待收流水；回款登记后转为成功",
+    columns: [
+      { title: "流水号", render: (r) => `<span class="mono">${esc(r.flow_no)}</span>` },
+      { title: "企业", render: (r) => esc(r.enterprise_name || "-") },
+      { title: "方向", render: (r) => `<span class="tag ${r.direction === "in" ? "green" : "orange"}">${esc(dict("direction", r.direction))}</span>` },
+      { title: "业务类型", render: (r) => esc(r.biz_type) },
+      { title: "金额", num: true, render: (r) => num(r.amount) },
+      { title: "支付状态", render: (r) => `<span class="tag ${r.pay_status === "success" ? "green" : r.pay_status === "failed" ? "red" : "orange"}">${esc(r.pay_status)}</span>` },
+      { title: "关联单据", render: (r) => `${esc(r.order_no || "-")}<br /><span class="muted mono">${esc(r.settlement_no || "")}</span>` },
+      { title: "回单号", render: (r) => `<span class="mono">${esc(r.trade_no || "-")}</span>` },
+      { title: "时间", render: (r) => `<span class="muted">${dt(r.created_at)}</span>` },
+    ],
+    rows: data.items,
+  });
+  root.innerHTML = "";
+  root.appendChild(card);
+};
+
+/* ------------------------------ 园区与档口 ------------------------------ */
+VIEWS.parks = async (root) => {
+  const [parks, stalls, contracts] = await Promise.all([
+    GET("/parks"), GET("/stalls", { page: 1, page_size: 60 }), GET("/park-contracts", { page: 1, page_size: 10 }),
+  ]);
+  const parkCards = parks.items
+    .map(
+      (p) => `<div class="kpi"><div class="k">${esc(p.name)}</div>
+      <div class="v" style="font-size:18px">${int(p.stall_rented)}/${int(p.stall_count)}<span class="u">档口已租</span></div>
+      <div class="muted" style="font-size:12px;margin-top:6px">区域 ${int(p.zone_count)} 个 · 入驻企业 ${int(p.enterprise_count)} 家<br />总面积 ${num(p.area_total)} ㎡ · ${esc(p.region || "")}</div></div>`
+    )
+    .join("");
+  const stallRows = stalls.items
+    .map((s) => `<tr><td class="mono">${esc(s.code)}</td><td>${esc(s.name)}</td><td>${esc(s.zone_name || "-")}</td>
+      <td class="num">${num(s.area)}</td><td class="num">${num(s.monthly_fee)}</td>
+      <td>${tag("stall_status", s.status)}</td><td>${esc(s.enterprise_name || "-")}</td></tr>`)
+    .join("");
+  const contractRows = contracts.items
+    .map((c) => `<tr><td class="mono">${esc(c.contract_no)}</td><td>${esc(c.enterprise_name || "-")}</td>
+      <td class="mono">${esc(c.stall_code || "-")}</td><td>${day(c.start_date)} ~ ${day(c.end_date)}</td>
+      <td class="num">${num(c.rent_amount)}</td><td>${esc(c.fee_cycle)}</td>
+      <td><span class="tag ${c.status === "effective" ? "green" : "orange"}">${esc(c.status)}</span></td></tr>`)
+    .join("");
+  root.innerHTML = `
+    <div class="kpis" style="margin-bottom:16px">${parkCards}</div>
+    <div class="grid2">
+      <div class="card"><header><h3>档口管理</h3><div class="hint">园区 → 区域 → 档口 → 企业</div></header>
+        <div class="body"><div style="overflow:auto;max-height:420px"><table>
+          <thead><tr><th>档口编码</th><th>名称</th><th>区域</th><th class="num">面积㎡</th><th class="num">月租金</th><th>状态</th><th>入驻企业</th></tr></thead>
+          <tbody>${stallRows || `<tr><td colspan="7" class="empty">暂无档口</td></tr>`}</tbody></table></div></div></div>
+      <div class="card"><header><h3>园区入驻合同</h3><div class="hint">合同生效后自动占用档口</div></header>
+        <div class="body"><div style="overflow:auto;max-height:420px"><table>
+          <thead><tr><th>合同号</th><th>企业</th><th>档口</th><th>租期</th><th class="num">租金</th><th>周期</th><th>状态</th></tr></thead>
+          <tbody>${contractRows || `<tr><td colspan="7" class="empty">暂无合同</td></tr>`}</tbody></table></div></div></div>
+    </div>`;
+};
+
+/* -------------------------------- 溯源批次 ------------------------------ */
+VIEWS.trace = async (root) => {
+  const data = await GET("/trace/batches", { page: 1, page_size: 30 });
+  const card = tableCard({
+    title: "食品安全溯源批次",
+    hint: "种植基地 → 加工企业 → 仓储 → 交易 → 销售；扫码公开查询免登录",
+    toolbarHtml: can("trace:write") ? `<button class="btn primary" data-new>新建批次</button>` : "",
+    columns: [
+      { title: "批次号", render: (r) => `<span class="mono">${esc(r.batch_no)}</span>` },
+      { title: "商品", render: (r) => esc(r.product_name || "-") },
+      { title: "企业", render: (r) => esc(r.enterprise_name || "-") },
+      { title: "种植基地", render: (r) => esc(r.origin_base || "-") },
+      { title: "数量", num: true, render: (r) => num(r.quantity, 3) },
+      { title: "质检", render: (r) => tag("quality_status", r.quality_status) },
+      { title: "链路事件", num: true, render: (r) => int(r.event_count) },
+      { title: "操作", render: (r) => `<a class="btn sm" target="_blank" href="/api/v1/trace/public/${encodeURIComponent(r.batch_no)}">扫码页</a>
+        <button class="btn sm" data-add="${r.id}">追加事件</button>` },
+    ],
+    rows: data.items,
+  });
+  root.innerHTML = "";
+  root.appendChild(card);
+  const nb = card.querySelector("[data-new]");
+  if (nb)
+    nb.addEventListener("click", async () => {
+      const products = await GET("/products", { page_size: 200 });
+      openModal({
+        title: "新建溯源批次", okText: "创建", width: 680,
+        bodyHtml: `<div class="form-row">
+          <div class="field" style="grid-column:1/-1"><label>商品 *</label><select name="product_id">
+            ${products.items.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>
+          <div class="field"><label>数量（吨）</label><input name="quantity" type="number" step="0.001" value="100" /></div>
+          <div class="field"><label>质检状态</label><select name="quality_status"><option value="qualified">合格</option><option value="pending">待检</option></select></div>
+          <div class="field" style="grid-column:1/-1"><label>种植基地</label><input name="origin_base" value="第十师一八三团葵花籽种植基地" /></div>
+          <div class="field"><label>种植地区</label><input name="origin_region" value="新疆北屯" /></div>
+          <div class="field"><label>播种日期</label><input name="plant_date" type="date" /></div>
+          <div class="field"><label>采收日期</label><input name="harvest_date" type="date" /></div>
+          <div class="field"><label>加工企业</label><input name="process_enterprise" /></div>
+          <div class="field"><label>加工日期</label><input name="process_date" type="date" /></div>
+        </div>`,
+        onOk: async (m) => {
+          const g = (n) => m.querySelector(`[name="${n}"]`);
+          await POST("/trace/batches", {
+            product_id: Number(g("product_id").value),
+            quantity: Number(g("quantity").value || 0),
+            quality_status: g("quality_status").value,
+            origin_base: g("origin_base").value.trim() || null,
+            origin_region: g("origin_region").value.trim() || null,
+            plant_date: g("plant_date").value || null,
+            harvest_date: g("harvest_date").value || null,
+            process_enterprise: g("process_enterprise").value.trim() || null,
+            process_date: g("process_date").value || null,
+          });
+          toast("批次已创建", "ok");
+          await route();
+        },
+      });
+    });
+  card.querySelectorAll("[data-add]").forEach((b) =>
+    b.addEventListener("click", () =>
+      openModal({
+        title: "追加溯源链路事件", okText: "提交",
+        bodyHtml: `<div class="field"><label>环节</label><select name="stage">
+            <option value="planting">种植</option><option value="processing">加工</option>
+            <option value="warehouse">仓储</option><option value="trade">交易</option><option value="sale">销售</option></select></div>
+          <div class="field"><label>标题 *</label><input name="title" /></div>
+          <div class="field"><label>说明</label><textarea name="description" rows="3" style="width:100%"></textarea></div>
+          <div class="field"><label>地点</label><input name="location" /></div>
+          <div class="field"><label>操作人</label><input name="operator" /></div>
+          <div class="field"><label>凭证地址（可选）</label><input name="evidence_url" /></div>`,
+        onOk: async (m) => {
+          const g = (n) => m.querySelector(`[name="${n}"]`);
+          if (!g("title").value.trim()) { toast("请填写标题", "err"); return false; }
+          await POST(`/trace/batches/${b.dataset.add}/events`, {
+            stage: g("stage").value,
+            title: g("title").value.trim(),
+            description: g("description").value.trim() || null,
+            location: g("location").value.trim() || null,
+            operator: g("operator").value.trim() || null,
+            evidence_url: g("evidence_url").value.trim() || null,
+          });
+          toast("已追加链路事件", "ok");
+          await route();
+        },
+      })
+    )
+  );
+};
+
+/* -------------------------------- 用户管理 ------------------------------ */
+VIEWS.users = async (root) => {
+  const [data, roles] = await Promise.all([
+    GET("/users", { page: 1, page_size: 50 }),
+    GET("/roles"),
+  ]);
+  const rows = data.items
+    .map((u) => `<tr><td class="mono">${esc(u.username)}</td><td>${esc(u.full_name || "-")}</td>
+      <td>${esc(u.enterprise_name || "-")}</td><td>${esc(u.org_name || "-")}</td>
+      <td>${(u.roles || []).map((r) => `<span class="tag blue">${esc(r)}</span>`).join(" ") || "-"}</td>
+      <td><span class="tag ${u.status === "active" ? "green" : "gray"}">${u.status === "active" ? "正常" : "停用"}</span></td>
+      <td><button class="btn sm" data-roles="${u.id}" data-name="${esc(u.username)}">分配角色</button></td></tr>`)
+    .join("");
+  root.innerHTML = `
+    <div class="card"><header><h3>平台用户</h3><div class="hint">RBAC：角色 → 权限码；企业账号自动按企业隔离数据</div></header>
+      <div class="body"><div style="overflow:auto"><table>
+        <thead><tr><th>登录名</th><th>姓名</th><th>所属企业</th><th>组织</th><th>角色</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody></table></div></div></div>
+    <div class="card"><header><h3>内置角色与权限</h3></header>
+      <div class="body"><table><thead><tr><th>角色编码</th><th>名称</th><th class="num">用户数</th><th class="num">权限数</th><th>权限码</th></tr></thead>
+      <tbody>${roles.map((r) => `<tr><td class="mono">${esc(r.code)}</td><td>${esc(r.name)}</td>
+        <td class="num">${int(r.user_count)}</td><td class="num">${int(r.permission_codes.length)}</td>
+        <td class="muted" style="font-size:12px">${esc(r.permission_codes.slice(0, 8).join(", "))}${r.permission_codes.length > 8 ? " …" : ""}</td></tr>`).join("")}</tbody></table></div></div>`;
+  root.querySelectorAll("[data-roles]").forEach((b) =>
+    b.addEventListener("click", () =>
+      openModal({
+        title: "分配角色 · " + b.dataset.name, okText: "保存",
+        bodyHtml: roles.map((r) => `<label style="display:block;padding:4px 0"><input type="checkbox" value="${r.id}" style="width:auto" /> ${esc(r.name)}（${esc(r.code)}）</label>`).join(""),
+        onOk: async (m) => {
+          const ids = [...m.querySelectorAll('input[type="checkbox"]:checked')].map((i) => Number(i.value));
+          await POST(`/users/${b.dataset.roles}/roles`, { role_ids: ids });
+          toast("角色已更新", "ok");
+          await route();
+        },
+      })
+    )
+  );
+};
+
+/* -------------------------------- 系统状态 ------------------------------ */
+VIEWS.system = async (root) => {
+  const [info, outbox] = await Promise.all([
+    GET("/system/info"),
+    GET("/integration/outbox", { page_size: 10 }).catch(() => ({ items: [], total: 0 })),
+  ]);
+  const item = (k, v) => `<tr><td class="muted">${esc(k)}</td><td>${v}</td></tr>`;
+  root.innerHTML = `
+    <div class="grid2">
+      <div class="card"><header><h3>运行信息</h3></header><div class="body"><table><tbody>
+        ${item("应用", esc(info.app) + " v" + esc(info.version))}
+        ${item("环境 / 时区", esc(info.env) + " / " + esc(info.timezone))}
+        ${item("服务器时间", dt(info.time))}
+        ${item("数据库", esc(info.database.dialect) + (info.database.ok ? " ✔ 已连接" : " ✘ 不可用"))}
+        ${item("缓存后端", esc(info.cache.backend) + (info.cache.backend === "redis" ? " ✔" : "（降级为进程内缓存）"))}
+        ${item("搜索后端", esc(info.search.engine) + (info.search.engine === "sql" ? "（降级为 SQL LIKE）" : " ✔"))}
+        ${item("对象存储", esc(info.storage.backend) + " · " + esc(info.storage.bucket))}
+        ${item("Odoo 集成", info.odoo.available ? "✔ 已连接 " + esc(info.odoo.version || "") : "✘ 未连接（事件将在 outbox 中重试）")}
+        ${item("平台服务费率", (Number(info.business.service_fee_rate) * 100).toFixed(2) + " %")}
+        ${item("默认税率", (Number(info.business.default_tax_rate) * 100).toFixed(2) + " %")}
+        ${item("数据量", "商品 " + int(info.counts.product) + " · 库存行 " + int(info.counts.inventory) + " · 仓库 " + int(info.counts.warehouse))}
+      </tbody></table></div></div>
+      <div class="card"><header><h3>集成出站事件（最近 10 条）</h3>
+        <div class="hint">待推送 ${int(info.outbox.pending)} · 失败 ${int(info.outbox.failed)}</div>
+        <div class="toolbar">${can("integration:write") ? `<button class="btn" data-push>立即推送</button>` : ""}</div></header>
+        <div class="body"><div style="overflow:auto"><table>
+          <thead><tr><th>ID</th><th>事件</th><th>业务对象</th><th>状态</th><th>重试</th><th>时间</th></tr></thead>
+          <tbody>${outbox.items.map((e) => `<tr><td class="num">${int(e.id)}</td><td class="mono">${esc(e.event_type)}</td>
+            <td>${esc(e.aggregate_type)}<br /><span class="muted mono">${esc(e.aggregate_id || "")}</span></td>
+            <td><span class="tag ${e.status === "success" ? "green" : e.status === "failed" ? "red" : "orange"}">${esc(e.status)}</span></td>
+            <td class="num">${int(e.retry_count)}</td><td class="muted">${dt(e.created_at)}</td></tr>`).join("")}</tbody></table></div></div></div>
+    </div>`;
+  const pushBtn = root.querySelector("[data-push]");
+  if (pushBtn)
+    pushBtn.addEventListener("click", async () => {
+      try {
+        const r = await POST("/integration/odoo/push-now", {});
+        toast(`推送完成：成功 ${r.success} / 失败 ${r.failed}`, "ok");
+        await route();
+      } catch (e) { toast(e.message, "err"); }
+    });
+};
+
+/* =============================== 启动流程 =============================== */
+function showLogin() {
+  $("#app").style.display = "none";
+  $("#login").style.display = "flex";
+}
+function showApp() {
+  $("#login").style.display = "none";
+  $("#app").style.display = "block";
+  const roles = (store.user.role_names || []).join("、");
+  $("#whoami").textContent = `${store.user.full_name || store.user.username}（${roles || "无角色"}）` +
+    (store.user.enterprise_name ? " · " + store.user.enterprise_name : "");
+  route();
+}
+
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = $("#loginUser").value.trim();
+  const password = $("#loginPass").value;
+  try {
+    const data = await api("/auth/login", { method: "POST", body: { username, password } });
+    store.token = data.access_token;
+    store.user = data.user;
+    localStorage.setItem("gz_token", store.token);
+    toast("登录成功，欢迎 " + (data.user.full_name || data.user.username), "ok");
+    showApp();
+  } catch (err) {
+    toast(err.message, "err");
+  }
+});
+
+$("#logoutBtn").addEventListener("click", async () => {
+  try { await POST("/auth/logout", {}); } catch (e) { /* 忽略 */ }
+  store.token = "";
+  store.user = null;
+  localStorage.removeItem("gz_token");
+  showLogin();
+});
+
+window.addEventListener("hashchange", () => {
+  if (store.user) route();
+});
+
+(async function boot() {
+  if (!store.token) return showLogin();
+  try {
+    store.user = await GET("/auth/me");
+    showApp();
+  } catch (e) {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

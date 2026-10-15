@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         报价单：列表
+         ================================================================== -->
+    <record id="view_gz_quotation_tree" model="ir.ui.view">
+        <field name="name">gz.quotation.tree</field>
+        <field name="model">gz.quotation</field>
+        <field name="arch" type="xml">
+            <tree string="报价单"
+                  decoration-success="state == 'accepted'"
+                  decoration-muted="state in ('rejected', 'expired')">
+                <field name="name"/>
+                <field name="inquiry_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="product_id"/>
+                <field name="quantity" sum="合计数量"/>
+                <field name="unit_price"/>
+                <field name="amount" sum="合计金额"/>
+                <field name="tax_rate" optional="hide"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="valid_until" optional="show"/>
+                <field name="delivery_date" optional="hide"/>
+                <field name="state" widget="badge"/>
+                <field name="order_id" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         报价单：表单
+         ================================================================== -->
+    <record id="view_gz_quotation_form" model="ir.ui.view">
+        <field name="name">gz.quotation.form</field>
+        <field name="model">gz.quotation</field>
+        <field name="arch" type="xml">
+            <form string="报价单">
+                <header>
+                    <button name="action_accept" type="object" string="接受报价并生成订单"
+                            class="oe_highlight" invisible="state != 'submitted'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_buyer"/>
+                    <button name="action_reject" type="object" string="拒绝报价"
+                            invisible="state != 'submitted'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_buyer"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="submitted,accepted,rejected,expired"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="报价单号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="关联单据">
+                            <field name="inquiry_id" options="{'no_create': True}"/>
+                            <field name="buyer_enterprise_id"/>
+                            <field name="supplier_enterprise_id" options="{'no_create': True}"/>
+                            <field name="order_id" readonly="1"/>
+                        </group>
+                        <group string="报价明细">
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="unit_price"/>
+                            <field name="tax_rate"/>
+                            <field name="amount"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="交付与付款">
+                            <field name="valid_until"/>
+                            <field name="delivery_date"/>
+                            <field name="payment_terms"/>
+                        </group>
+                        <group string="备注">
+                            <field name="remark"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         报价单：搜索
+         ================================================================== -->
+    <record id="view_gz_quotation_search" model="ir.ui.view">
+        <field name="name">gz.quotation.search</field>
+        <field name="model">gz.quotation</field>
+        <field name="arch" type="xml">
+            <search string="报价单">
+                <field name="name"/>
+                <field name="inquiry_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="product_id"/>
+                <filter name="filter_submitted" string="待处理" domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_accepted" string="已接受" domain="[('state', '=', 'accepted')]"/>
+                <filter name="filter_rejected" string="已拒绝" domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <filter name="filter_valid" string="报价有效"
+                        domain="['|', ('valid_until', '=', False), ('valid_until', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                    <filter name="group_supplier" string="供应商" context="{'group_by': 'supplier_enterprise_id'}"/>
+                    <filter name="group_product" string="商品" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_inquiry" string="询价单" context="{'group_by': 'inquiry_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         报价单：动作
+         ================================================================== -->
+    <record id="action_gz_quotation" model="ir.actions.act_window">
+        <field name="name">报价单</field>
+        <field name="res_model">gz.quotation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_quotation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有报价单</p>
+            <p>供应商对询价单报价，采购商接受后自动生成平台订单（待供方确认）。</p>
+        </field>
+    </record>
+
+</odoo>

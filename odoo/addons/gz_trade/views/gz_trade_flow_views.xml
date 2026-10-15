@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         交易流水：列表
+         ================================================================== -->
+    <record id="view_gz_trade_flow_tree" model="ir.ui.view">
+        <field name="name">gz.trade.flow.tree</field>
+        <field name="model">gz.trade.flow</field>
+        <field name="arch" type="xml">
+            <tree string="交易流水"
+                  decoration-success="pay_status == 'success'"
+                  decoration-danger="pay_status == 'failed'"
+                  decoration-info="pay_status == 'pending'">
+                <field name="name"/>
+                <field name="order_id"/>
+                <field name="enterprise_id"/>
+                <field name="direction"/>
+                <field name="biz_type"/>
+                <field name="amount" sum="金额合计"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="pay_method" optional="show"/>
+                <field name="pay_status" widget="badge"/>
+                <field name="trade_no" optional="show"/>
+                <field name="paid_at"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         交易流水：表单
+         ================================================================== -->
+    <record id="view_gz_trade_flow_form" model="ir.ui.view">
+        <field name="name">gz.trade.flow.form</field>
+        <field name="model">gz.trade.flow</field>
+        <field name="arch" type="xml">
+            <form string="交易流水">
+                <header>
+                    <button name="action_mark_success" type="object" string="登记支付成功"
+                            class="oe_highlight" invisible="pay_status == 'success'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_mark_failed" type="object" string="登记支付失败"
+                            invisible="pay_status == 'failed'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <field name="pay_status" widget="statusbar" statusbar_visible="pending,success,failed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="流水号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="关联">
+                            <field name="order_id" options="{'no_create': True}"/>
+                            <field name="enterprise_id" options="{'no_create': True}"/>
+                            <field name="direction"/>
+                            <field name="biz_type"/>
+                        </group>
+                        <group string="金额与支付">
+                            <field name="amount"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="pay_method"/>
+                            <field name="trade_no"/>
+                            <field name="paid_at"/>
+                        </group>
+                    </group>
+                    <group string="备注">
+                        <field name="remark" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         交易流水：搜索
+         ================================================================== -->
+    <record id="view_gz_trade_flow_search" model="ir.ui.view">
+        <field name="name">gz.trade.flow.search</field>
+        <field name="model">gz.trade.flow</field>
+        <field name="arch" type="xml">
+            <search string="交易流水">
+                <field name="name"/>
+                <field name="order_id"/>
+                <field name="enterprise_id"/>
+                <field name="trade_no"/>
+                <filter name="filter_pending" string="待支付" domain="[('pay_status', '=', 'pending')]"/>
+                <filter name="filter_success" string="支付成功" domain="[('pay_status', '=', 'success')]"/>
+                <filter name="filter_failed" string="支付失败" domain="[('pay_status', '=', 'failed')]"/>
+                <separator/>
+                <filter name="filter_in" string="收入" domain="[('direction', '=', 'in')]"/>
+                <filter name="filter_out" string="支出" domain="[('direction', '=', 'out')]"/>
+                <filter name="filter_service_fee" string="平台服务费" domain="[('biz_type', '=', 'service_fee')]"/>
+                <filter name="filter_deposit" string="保证金" domain="[('biz_type', '=', 'deposit')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_enterprise" string="企业" context="{'group_by': 'enterprise_id'}"/>
+                    <filter name="group_direction" string="资金方向" context="{'group_by': 'direction'}"/>
+                    <filter name="group_biz_type" string="业务类型" context="{'group_by': 'biz_type'}"/>
+                    <filter name="group_pay_status" string="支付状态" context="{'group_by': 'pay_status'}"/>
+                    <filter name="group_paid_at" string="支付日期" context="{'group_by': 'paid_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         交易流水：动作
+         ================================================================== -->
+    <record id="action_gz_trade_flow" model="ir.actions.act_window">
+        <field name="name">交易流水</field>
+        <field name="res_model">gz.trade.flow</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_trade_flow_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有交易流水</p>
+            <p>平台不自建支付通道，只登记资金流水与对账结果。</p>
+        </field>
+    </record>
+
+</odoo>

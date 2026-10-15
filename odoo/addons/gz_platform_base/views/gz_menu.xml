@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 平台根菜单：六个角色均可见 -->
+    <menuitem id="menu_gz_root"
+              name="瓜子油料平台"
+              sequence="10"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer,gz_platform_base.group_gz_finance"/>
+
+    <menuitem id="menu_gz_platform_base_root"
+              name="平台基础"
+              parent="menu_gz_root"
+              sequence="90"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+
+    <menuitem id="menu_gz_enterprise"
+              name="企业主体"
+              parent="menu_gz_platform_base_root"
+              action="action_gz_enterprise"
+              sequence="10"/>
+
+</odoo>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         结算单：列表
+         ================================================================== -->
+    <record id="view_gz_settlement_tree" model="ir.ui.view">
+        <field name="name">gz.settlement.tree</field>
+        <field name="model">gz.settlement</field>
+        <field name="arch" type="xml">
+            <tree string="结算单"
+                  decoration-success="state == 'settled'"
+                  decoration-danger="pay_status == 'unpaid' and state == 'confirmed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="enterprise_id"/>
+                <field name="settle_type"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="order_amount" sum="订单金额合计"/>
+                <field name="fee_amount" sum="费用合计"/>
+                <field name="settle_amount" sum="应结算合计"/>
+                <field name="settled_amount" sum="已结算合计"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="pay_status" widget="badge"/>
+                <field name="state" widget="badge"/>
+                <field name="move_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         结算单：表单
+         ================================================================== -->
+    <record id="view_gz_settlement_form" model="ir.ui.view">
+        <field name="name">gz.settlement.form</field>
+        <field name="model">gz.settlement</field>
+        <field name="arch" type="xml">
+            <form string="结算单">
+                <header>
+                    <button name="action_confirm" type="object" string="确认结算单并生成凭证"
+                            class="oe_highlight" invisible="state != 'pending'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_settle" type="object" string="标记已结算"
+                            invisible="state != 'confirmed'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_view_move" type="object" string="查看凭证"
+                            invisible="move_id == False"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_cancel" type="object" string="取消"
+                            invisible="state in ('settled', 'cancelled')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,confirmed,settled,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="结算单号"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="结算对象">
+                            <field name="enterprise_id" options="{'no_create': True}"/>
+                            <field name="settle_type"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="pay_status"/>
+                        </group>
+                        <group string="结算期间与金额">
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                            <field name="order_amount"/>
+                            <field name="fee_amount"/>
+                            <field name="settle_amount"/>
+                            <field name="settled_amount"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="结算明细" name="gz_settlement_lines">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="biz_type"/>
+                                    <field name="biz_no"/>
+                                    <field name="amount" sum="金额合计"/>
+                                    <field name="fee_rate"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="remark"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="账务与处理" name="gz_settlement_account">
+                            <group>
+                                <group string="账务">
+                                    <field name="move_id" readonly="1"/>
+                                </group>
+                                <group string="处理信息">
+                                    <field name="confirm_user_id"/>
+                                    <field name="confirm_date"/>
+                                    <field name="settled_date"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="备注" name="gz_settlement_remark">
+                            <field name="remark" placeholder="对账差异说明、发票信息等"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         结算单：搜索
+         ================================================================== -->
+    <record id="view_gz_settlement_search" model="ir.ui.view">
+        <field name="name">gz.settlement.search</field>
+        <field name="model">gz.settlement</field>
+        <field name="arch" type="xml">
+            <search string="结算单">
+                <field name="name"/>
+                <field name="enterprise_id"/>
+                <field name="move_id"/>
+                <filter name="filter_pending" string="待确认" domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_confirmed" string="已确认" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_settled" string="已结算" domain="[('state', '=', 'settled')]"/>
+                <separator/>
+                <filter name="filter_receivable" string="应收" domain="[('settle_type', '=', 'receivable')]"/>
+                <filter name="filter_payable" string="应付" domain="[('settle_type', '=', 'payable')]"/>
+                <filter name="filter_park_fee" string="园区费用" domain="[('settle_type', '=', 'park_fee')]"/>
+                <separator/>
+                <filter name="filter_unpaid" string="未付清"
+                        domain="[('pay_status', '!=', 'paid')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_enterprise" string="结算企业" context="{'group_by': 'enterprise_id'}"/>
+                    <filter name="group_settle_type" string="结算类型" context="{'group_by': 'settle_type'}"/>
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                    <filter name="group_pay_status" string="付款状态" context="{'group_by': 'pay_status'}"/>
+                    <filter name="group_period_end" string="结算期间（止）" context="{'group_by': 'period_end'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         结算单：动作
+         ================================================================== -->
+    <record id="action_gz_settlement" model="ir.actions.act_window">
+        <field name="name">结算单</field>
+        <field name="res_model">gz.settlement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_settlement_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有结算单</p>
+            <p>结算单确认后生成 Odoo 账务凭证草稿（ref = 结算单号），过账由财务在会计中完成。</p>
+        </field>
+    </record>
+
+    <record id="action_gz_settlement_unpaid" model="ir.actions.act_window">
+        <field name="name">待回款结算单</field>
+        <field name="res_model">gz.settlement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_settlement_search"/>
+        <field name="domain">[('pay_status', '!=', 'paid'), ('state', '!=', 'cancelled')]</field>
+        <field name="context">{'search_default_filter_unpaid': 1}</field>
+    </record>
+
+</odoo>

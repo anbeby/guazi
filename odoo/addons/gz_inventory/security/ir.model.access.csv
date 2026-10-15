@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gz_stock_batch_admin,gz.stock.batch platform admin,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_stock_batch_park,gz.stock.batch park operator,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_stock_batch_merchant,gz.stock.batch merchant,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_stock_batch_supplier,gz.stock.batch supplier,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_stock_batch_buyer,gz.stock.batch buyer,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_stock_batch_finance,gz.stock.batch finance,gz_inventory.model_gz_stock_batch,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_warehouse_config_admin,gz.warehouse.config platform admin,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_warehouse_config_park,gz.warehouse.config park operator,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_warehouse_config_merchant,gz.warehouse.config merchant,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_merchant,1,0,0,0
+access_gz_warehouse_config_supplier,gz.warehouse.config supplier,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_supplier,1,0,0,0
+access_gz_warehouse_config_buyer,gz.warehouse.config buyer,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_warehouse_config_finance,gz.warehouse.config finance,gz_inventory.model_gz_warehouse_config,gz_platform_base.group_gz_finance,1,0,0,0

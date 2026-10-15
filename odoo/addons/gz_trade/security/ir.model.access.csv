@@ -1,0 +1,55 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gz_inquiry_admin,gz.inquiry platform admin,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_inquiry_park,gz.inquiry park operator,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_inquiry_merchant,gz.inquiry merchant,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_inquiry_supplier,gz.inquiry supplier,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_supplier,1,1,0,0
+access_gz_inquiry_buyer,gz.inquiry buyer,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_buyer,1,1,1,0
+access_gz_inquiry_finance,gz.inquiry finance,gz_trade.model_gz_inquiry,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_quotation_admin,gz.quotation platform admin,gz_trade.model_gz_quotation,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_quotation_park,gz.quotation park operator,gz_trade.model_gz_quotation,gz_platform_base.group_gz_park_operator,1,1,0,0
+access_gz_quotation_merchant,gz.quotation merchant,gz_trade.model_gz_quotation,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_quotation_supplier,gz.quotation supplier,gz_trade.model_gz_quotation,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_quotation_buyer,gz.quotation buyer,gz_trade.model_gz_quotation,gz_platform_base.group_gz_buyer,1,1,0,0
+access_gz_quotation_finance,gz.quotation finance,gz_trade.model_gz_quotation,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_order_admin,gz.order platform admin,gz_trade.model_gz_order,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_order_park,gz.order park operator,gz_trade.model_gz_order,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_order_merchant,gz.order merchant,gz_trade.model_gz_order,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_order_supplier,gz.order supplier,gz_trade.model_gz_order,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_order_buyer,gz.order buyer,gz_trade.model_gz_order,gz_platform_base.group_gz_buyer,1,1,0,0
+access_gz_order_finance,gz.order finance,gz_trade.model_gz_order,gz_platform_base.group_gz_finance,1,1,0,0
+access_gz_order_line_admin,gz.order.line platform admin,gz_trade.model_gz_order_line,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_order_line_park,gz.order.line park operator,gz_trade.model_gz_order_line,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_order_line_merchant,gz.order.line merchant,gz_trade.model_gz_order_line,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_order_line_supplier,gz.order.line supplier,gz_trade.model_gz_order_line,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_order_line_buyer,gz.order.line buyer,gz_trade.model_gz_order_line,gz_platform_base.group_gz_buyer,1,1,0,0
+access_gz_order_line_finance,gz.order.line finance,gz_trade.model_gz_order_line,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_order_timeline_admin,gz.order.timeline platform admin,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_order_timeline_park,gz.order.timeline park operator,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_order_timeline_merchant,gz.order.timeline merchant,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_order_timeline_supplier,gz.order.timeline supplier,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_order_timeline_buyer,gz.order.timeline buyer,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_order_timeline_finance,gz.order.timeline finance,gz_trade.model_gz_order_timeline,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_contract_admin,gz.contract platform admin,gz_trade.model_gz_contract,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_contract_park,gz.contract park operator,gz_trade.model_gz_contract,gz_platform_base.group_gz_park_operator,1,1,0,0
+access_gz_contract_merchant,gz.contract merchant,gz_trade.model_gz_contract,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_contract_supplier,gz.contract supplier,gz_trade.model_gz_contract,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_contract_buyer,gz.contract buyer,gz_trade.model_gz_contract,gz_platform_base.group_gz_buyer,1,1,0,0
+access_gz_contract_finance,gz.contract finance,gz_trade.model_gz_contract,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_settlement_admin,gz.settlement platform admin,gz_trade.model_gz_settlement,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_settlement_park,gz.settlement park operator,gz_trade.model_gz_settlement,gz_platform_base.group_gz_park_operator,1,0,0,0
+access_gz_settlement_merchant,gz.settlement merchant,gz_trade.model_gz_settlement,gz_platform_base.group_gz_merchant,1,0,0,0
+access_gz_settlement_supplier,gz.settlement supplier,gz_trade.model_gz_settlement,gz_platform_base.group_gz_supplier,1,0,0,0
+access_gz_settlement_buyer,gz.settlement buyer,gz_trade.model_gz_settlement,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_settlement_finance,gz.settlement finance,gz_trade.model_gz_settlement,gz_platform_base.group_gz_finance,1,1,1,0
+access_gz_settlement_line_admin,gz.settlement.line platform admin,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_settlement_line_park,gz.settlement.line park operator,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_park_operator,1,0,0,0
+access_gz_settlement_line_merchant,gz.settlement.line merchant,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_merchant,1,0,0,0
+access_gz_settlement_line_supplier,gz.settlement.line supplier,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_supplier,1,0,0,0
+access_gz_settlement_line_buyer,gz.settlement.line buyer,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_settlement_line_finance,gz.settlement.line finance,gz_trade.model_gz_settlement_line,gz_platform_base.group_gz_finance,1,1,1,0
+access_gz_trade_flow_admin,gz.trade.flow platform admin,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_trade_flow_park,gz.trade.flow park operator,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_park_operator,1,0,0,0
+access_gz_trade_flow_merchant,gz.trade.flow merchant,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_merchant,1,0,0,0
+access_gz_trade_flow_supplier,gz.trade.flow supplier,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_supplier,1,0,0,0
+access_gz_trade_flow_buyer,gz.trade.flow buyer,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_trade_flow_finance,gz.trade.flow finance,gz_trade.model_gz_trade_flow,gz_platform_base.group_gz_finance,1,1,1,0

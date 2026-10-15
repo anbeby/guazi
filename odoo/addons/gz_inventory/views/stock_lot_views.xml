@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         Odoo 批次/序列号：表单挂接平台批次、质检状态与溯源码
+         继承 stock.view_production_lot_form
+         ================================================================== -->
+    <record id="view_production_lot_form_gz" model="ir.ui.view">
+        <field name="name">stock.lot.form.gz</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="gz_batch_id" options="{'no_create': True}"/>
+                <field name="gz_quality_status"/>
+                <field name="gz_trace_code"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         Odoo 批次/序列号：列表增加平台字段
+         继承 stock.view_production_lot_tree
+         ================================================================== -->
+    <record id="view_production_lot_tree_gz" model="ir.ui.view">
+        <field name="name">stock.lot.tree.gz</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="gz_batch_id" optional="show"/>
+                <field name="gz_quality_status" optional="show"/>
+                <field name="gz_trace_code" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

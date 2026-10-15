@@ -1,0 +1,15 @@
+{
+  "release_id": "v1.1-current-check-20261015",
+  "base_images": {
+    "api": "gz-api:v1.1-rc1",
+    "worker": "gz-api:v1.1-rc1",
+    "admin-web": "gz-admin-web:v1.1-guardfix-20261014"
+  },
+  "target_images": {
+    "api": "gz-api:v1.1-rc1",
+    "worker": "gz-api:v1.1-rc1",
+    "admin-web": "gz-admin-web:v1.1-guardfix-20261014"
+  },
+  "db_from": "0003_open_lead_portal",
+  "db_to": "0003_open_lead_portal"
+}

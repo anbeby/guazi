@@ -1,0 +1,38 @@
+{
+  "name": "gz-admin-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "第十师瓜子油料数字化交易平台 · PC 管理后台（平台/园区/商户）",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
+    "build:only": "vite build",
+    "preview": "vite preview --port 4173",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.7",
+    "dayjs": "^1.11.13",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.8.4",
+    "nprogress": "^0.2.0",
+    "pinia": "^2.2.4",
+    "vue": "^3.4.38",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.10",
+    "@types/nprogress": "^0.2.3",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "typescript": "~5.5.4",
+    "unplugin-auto-import": "^0.18.3",
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^5.4.8",
+    "vue-tsc": "^2.1.6"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

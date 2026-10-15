@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         应用分类
+         ================================================================== -->
+    <record id="module_category_gz_platform" model="ir.module.category">
+        <field name="name">瓜子油料平台</field>
+        <field name="description">第十师瓜子油料数字化交易平台（Odoo 企业侧）</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <!-- ==================================================================
+         平台角色安全组
+         与自研平台内置角色一一对应（docs/03 第 1 节、docs/04 第 4 节）
+         ================================================================== -->
+    <record id="group_gz_platform_admin" model="res.groups">
+        <field name="name">平台管理员</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">平台侧管理员：企业/商品审核、全平台数据可见、集成配置维护。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_gz_park_operator" model="res.groups">
+        <field name="name">园区运营人员</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">园区运营：所辖园区企业、入驻申请、商品与库存的只读与部分写权限。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_gz_merchant" model="res.groups">
+        <field name="name">商户</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">园区商户：管理本企业经营范围内的商品、库存与交易数据。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_gz_supplier" model="res.groups">
+        <field name="name">供应商</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">供应商：维护本企业商品、报价、库存与订单。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_gz_buyer" model="res.groups">
+        <field name="name">采购商</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">采购商：发起询价、接受报价、查看本企业订单与合同。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_gz_finance" model="res.groups">
+        <field name="name">财务</field>
+        <field name="category_id" ref="module_category_gz_platform"/>
+        <field name="comment">财务：全平台结算单、交易流水与账务凭证草稿。</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- ==================================================================
+         记录规则：企业级数据隔离
+         - 平台管理员 / 财务：不加限制（全部可见）
+         - 商户 / 供应商 / 采购商：仅可见与本企业往来单位关联的企业主体
+         - 园区运营：阶段一仅做只读授权（见 ir.model.access.csv），
+           按园区过滤的规则在阶段二由 gz_park 模块追加 park_id 后补充
+         ================================================================== -->
+    <record id="rule_gz_enterprise_own_company" model="ir.rule">
+        <field name="name">企业主体：商户/供应商/采购商仅见本企业</field>
+        <field name="model_id" ref="model_gz_enterprise"/>
+        <field name="domain_force">['|', ('partner_id', '=', user.partner_id.id), ('create_uid', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_gz_merchant')), (4, ref('group_gz_supplier')), (4, ref('group_gz_buyer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

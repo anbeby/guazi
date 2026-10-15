@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         资质附件：列表
+         ================================================================== -->
+    <record id="view_gz_merchant_qualification_tree" model="ir.ui.view">
+        <field name="name">gz.merchant.qualification.tree</field>
+        <field name="model">gz.merchant.qualification</field>
+        <field name="arch" type="xml">
+            <tree string="资质附件"
+                  decoration-danger="state == 'expired'"
+                  decoration-warning="state == 'expiring'"
+                  decoration-muted="state == 'invalid'">
+                <field name="enterprise_id"/>
+                <field name="name"/>
+                <field name="qual_type"/>
+                <field name="issue_date"/>
+                <field name="expire_date"/>
+                <field name="days_to_expire"/>
+                <field name="state" widget="badge"/>
+                <field name="file_name" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         资质附件：表单
+         ================================================================== -->
+    <record id="view_gz_merchant_qualification_form" model="ir.ui.view">
+        <field name="name">gz.merchant.qualification.form</field>
+        <field name="model">gz.merchant.qualification</field>
+        <field name="arch" type="xml">
+            <form string="资质附件">
+                <header>
+                    <button name="action_set_invalid" type="object" string="作废"
+                            invisible="state == 'invalid'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <field name="state" widget="statusbar" statusbar_visible="valid,expiring,expired,invalid"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="enterprise_id"/>
+                            <field name="name"/>
+                            <field name="qual_type"/>
+                        </group>
+                        <group>
+                            <field name="issue_date"/>
+                            <field name="expire_date"/>
+                            <field name="days_to_expire"/>
+                            <field name="remark"/>
+                        </group>
+                    </group>
+                    <group string="附件">
+                        <field name="file" filename="file_name" widget="binary"/>
+                        <field name="file_name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         资质附件：搜索
+         ================================================================== -->
+    <record id="view_gz_merchant_qualification_search" model="ir.ui.view">
+        <field name="name">gz.merchant.qualification.search</field>
+        <field name="model">gz.merchant.qualification</field>
+        <field name="arch" type="xml">
+            <search string="资质附件">
+                <field name="enterprise_id"/>
+                <field name="name"/>
+                <filter name="filter_valid" string="有效" domain="[('state', '=', 'valid')]"/>
+                <filter name="filter_expiring" string="即将到期" domain="[('state', '=', 'expiring')]"/>
+                <filter name="filter_expired" string="已过期" domain="[('state', '=', 'expired')]"/>
+                <separator/>
+                <filter name="filter_license" string="营业执照" domain="[('qual_type', '=', 'license')]"/>
+                <filter name="filter_food_license" string="食品生产许可证" domain="[('qual_type', '=', 'food_license')]"/>
+                <filter name="filter_test_report" string="检测报告" domain="[('qual_type', '=', 'test_report')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_enterprise" string="企业" context="{'group_by': 'enterprise_id'}"/>
+                    <filter name="group_qual_type" string="资质类型" context="{'group_by': 'qual_type'}"/>
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         资质附件：动作
+         ================================================================== -->
+    <record id="action_gz_merchant_qualification" model="ir.actions.act_window">
+        <field name="name">资质台账</field>
+        <field name="res_model">gz.merchant.qualification</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_merchant_qualification_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有资质附件</p>
+            <p>登记营业执照、食品生产许可证、检测报告等，到期前 30 天自动标红提醒。</p>
+        </field>
+    </record>
+
+</odoo>

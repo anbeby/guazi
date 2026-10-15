@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 商户中心：挂在 gz_platform_base 的根菜单下 -->
+    <menuitem id="menu_gz_merchant_root"
+              name="商户中心"
+              parent="gz_platform_base.menu_gz_root"
+              sequence="20"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer,gz_platform_base.group_gz_finance"/>
+
+    <menuitem id="menu_gz_merchant_profile"
+              name="商户档案"
+              parent="menu_gz_merchant_root"
+              action="action_gz_merchant_profile"
+              sequence="10"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer"/>
+
+    <menuitem id="menu_gz_merchant_entry"
+              name="入驻申请"
+              parent="menu_gz_merchant_root"
+              action="action_gz_merchant_entry"
+              sequence="20"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+
+    <menuitem id="menu_gz_merchant_qualification"
+              name="资质台账"
+              parent="menu_gz_merchant_root"
+              action="action_gz_merchant_qualification"
+              sequence="30"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_finance"/>
+
+</odoo>

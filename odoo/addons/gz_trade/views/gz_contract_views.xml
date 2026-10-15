@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         平台合同：列表
+         ================================================================== -->
+    <record id="view_gz_contract_tree" model="ir.ui.view">
+        <field name="name">gz.contract.tree</field>
+        <field name="model">gz.contract</field>
+        <field name="arch" type="xml">
+            <tree string="平台合同"
+                  decoration-success="state == 'effective'"
+                  decoration-info="state == 'signed'"
+                  decoration-muted="state in ('terminated', 'expired')">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="buyer_enterprise_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="order_id" optional="show"/>
+                <field name="amount" sum="合计金额"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="sign_date" optional="show"/>
+                <field name="start_date" optional="hide"/>
+                <field name="end_date" optional="show"/>
+                <field name="signed_by_buyer" optional="hide"/>
+                <field name="signed_by_supplier" optional="hide"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台合同：表单
+         ================================================================== -->
+    <record id="view_gz_contract_form" model="ir.ui.view">
+        <field name="name">gz.contract.form</field>
+        <field name="model">gz.contract</field>
+        <field name="arch" type="xml">
+            <form string="平台合同">
+                <header>
+                    <button name="action_submit" type="object" string="提交待签署"
+                            class="oe_highlight" invisible="state != 'draft'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer"/>
+                    <button name="action_sign_buyer" type="object" string="买方签署"
+                            invisible="signed_by_buyer or state in ('effective', 'terminated', 'expired')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_buyer"/>
+                    <button name="action_sign_supplier" type="object" string="卖方签署"
+                            invisible="signed_by_supplier or state in ('effective', 'terminated', 'expired')"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    <button name="action_effect" type="object" string="合同生效"
+                            class="oe_highlight" invisible="state != 'signed'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+                    <button name="action_terminate" type="object" string="终止合同"
+                            invisible="state in ('terminated', 'expired')"
+                            groups="gz_platform_base.group_gz_platform_admin"/>
+                    <button name="action_reset_draft" type="object" string="撤回草稿"
+                            invisible="state in ('draft', 'effective')"
+                            groups="gz_platform_base.group_gz_platform_admin"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,pending_sign,signed,effective,terminated"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="title" string="合同名称"/>
+                        <h1><field name="title" placeholder="如：2025 年度葵花籽采购框架合同"/></h1>
+                    </div>
+                    <group>
+                        <group string="合同要素">
+                            <field name="name" readonly="1"/>
+                            <field name="order_id" options="{'no_create': True}"/>
+                            <field name="buyer_enterprise_id" options="{'no_create': True}"/>
+                            <field name="supplier_enterprise_id" options="{'no_create': True}"/>
+                        </group>
+                        <group string="金额与期限">
+                            <field name="amount"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="sign_date"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <group string="签署">
+                        <group>
+                            <field name="signed_by_buyer"/>
+                            <field name="buyer_signed_at"/>
+                        </group>
+                        <group>
+                            <field name="signed_by_supplier"/>
+                            <field name="supplier_signed_at"/>
+                        </group>
+                    </group>
+                    <group string="附件与备注">
+                        <field name="file" filename="file_name"/>
+                        <field name="file_name"/>
+                        <field name="terminated_reason"/>
+                        <field name="remark" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台合同：搜索
+         ================================================================== -->
+    <record id="view_gz_contract_search" model="ir.ui.view">
+        <field name="name">gz.contract.search</field>
+        <field name="model">gz.contract</field>
+        <field name="arch" type="xml">
+            <search string="平台合同">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="buyer_enterprise_id"/>
+                <field name="supplier_enterprise_id"/>
+                <field name="order_id"/>
+                <filter name="filter_pending_sign" string="待签署" domain="[('state', '=', 'pending_sign')]"/>
+                <filter name="filter_signed" string="已签署" domain="[('state', '=', 'signed')]"/>
+                <filter name="filter_effective" string="已生效" domain="[('state', '=', 'effective')]"/>
+                <filter name="filter_wait_buyer" string="待买方签署" domain="[('signed_by_buyer', '=', False)]"/>
+                <filter name="filter_wait_supplier" string="待卖方签署" domain="[('signed_by_supplier', '=', False)]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_state" string="状态" context="{'group_by': 'state'}"/>
+                    <filter name="group_buyer" string="买方" context="{'group_by': 'buyer_enterprise_id'}"/>
+                    <filter name="group_supplier" string="卖方" context="{'group_by': 'supplier_enterprise_id'}"/>
+                    <filter name="group_sign_date" string="签订日期" context="{'group_by': 'sign_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         平台合同：动作
+         ================================================================== -->
+    <record id="action_gz_contract" model="ir.actions.act_window">
+        <field name="name">合同管理</field>
+        <field name="res_model">gz.contract</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_contract_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有平台合同</p>
+            <p>可由平台订单直接生成合同；买卖双方签署完成后生效。</p>
+        </field>
+    </record>
+
+</odoo>

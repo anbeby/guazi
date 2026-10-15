@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 交易中心：挂在 gz_platform_base 的根菜单下 -->
+    <menuitem id="menu_gz_trade_root"
+              name="交易中心"
+              parent="gz_platform_base.menu_gz_root"
+              sequence="50"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer,gz_platform_base.group_gz_finance"/>
+
+    <!-- 撮合交易 -->
+    <menuitem id="menu_gz_trade_matching"
+              name="撮合交易"
+              parent="menu_gz_trade_root"
+              sequence="10"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer"/>
+
+    <menuitem id="menu_gz_inquiry"
+              name="询价单"
+              parent="menu_gz_trade_matching"
+              action="action_gz_inquiry"
+              sequence="10"/>
+
+    <menuitem id="menu_gz_quotation"
+              name="报价单"
+              parent="menu_gz_trade_matching"
+              action="action_gz_quotation"
+              sequence="20"/>
+
+    <!-- 订单与合同 -->
+    <menuitem id="menu_gz_trade_order"
+              name="订单与合同"
+              parent="menu_gz_trade_root"
+              sequence="20"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier,gz_platform_base.group_gz_buyer,gz_platform_base.group_gz_finance"/>
+
+    <menuitem id="menu_gz_order"
+              name="平台订单"
+              parent="menu_gz_trade_order"
+              action="action_gz_order"
+              sequence="10"/>
+
+    <menuitem id="menu_gz_order_pending"
+              name="待确认订单"
+              parent="menu_gz_trade_order"
+              action="action_gz_order_pending"
+              sequence="20"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+
+    <menuitem id="menu_gz_contract"
+              name="合同管理"
+              parent="menu_gz_trade_order"
+              action="action_gz_contract"
+              sequence="30"/>
+
+    <!-- 结算与资金 -->
+    <menuitem id="menu_gz_trade_settlement"
+              name="结算与资金"
+              parent="menu_gz_trade_root"
+              sequence="30"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+
+    <menuitem id="menu_gz_settlement"
+              name="结算单"
+              parent="menu_gz_trade_settlement"
+              action="action_gz_settlement"
+              sequence="10"/>
+
+    <menuitem id="menu_gz_settlement_unpaid"
+              name="待回款结算单"
+              parent="menu_gz_trade_settlement"
+              action="action_gz_settlement_unpaid"
+              sequence="20"
+              groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_finance"/>
+
+    <menuitem id="menu_gz_trade_flow"
+              name="交易流水"
+              parent="menu_gz_trade_settlement"
+              action="action_gz_trade_flow"
+              sequence="30"/>
+
+</odoo>

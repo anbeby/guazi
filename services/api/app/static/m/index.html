@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1d6f42" />
+<link rel="icon" type="image/svg+xml" href="/static/images/logo/platform-mark.svg" />
+<title>瓜子油料平台 · 移动端</title>
+<style>
+  :root{
+    --primary:#0b6841; --primary-2:#24875b; --accent:#e86b1d;
+    --bg:#f3f7f4; --panel:#fff; --line:#e1ebe4; --text:#193628; --muted:#64776b;
+    --danger:#d14343; --warn:#c98a12; --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",Roboto,sans-serif;background:var(--bg);color:var(--text);
+       padding-bottom:calc(62px + env(safe-area-inset-bottom))}
+  a{color:var(--primary);text-decoration:none}
+  button,input,select,textarea{font:inherit}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(46,139,87,.12)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);
+       background:#fff;border-radius:10px;padding:11px 16px;color:var(--text);font-weight:500}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:active{background:#075336}
+  .btn.block{width:100%}
+  .btn.sm{padding:7px 12px;font-size:13px;border-radius:8px}
+  .btn.ghost{background:#f7faf8}
+  .btn[disabled]{opacity:.5}
+  .topbar{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;
+          padding:calc(12px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .topbar h1{margin:0;font-size:17px;font-weight:600}
+  .topbar .sub{font-size:11px;opacity:.85}
+  .topbar .act{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:9px;padding:6px 12px;font-size:13px}
+  .wrap{padding:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+  .card>.hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card>.hd b{font-size:15px}
+  .card>.bd{padding:12px 14px}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .kpi .k{font-size:12px;color:var(--muted)}
+  .kpi .v{font-size:19px;font-weight:700;color:var(--primary);margin-top:2px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .t{font-weight:600}
+  .row .d{font-size:12px;color:var(--muted);margin-top:2px}
+  .price{color:var(--danger);font-weight:700}
+  .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:#f1f3f6;color:#5b6472}
+  .tag.green{background:#e7f5ec;color:#1d6f42}
+  .tag.orange{background:#fdf3e2;color:#c98a12}
+  .tag.red{background:#fdecec;color:#d14343}
+  .tag.blue{background:#e8f1fb;color:#1c5fa8}
+  .muted{color:var(--muted)}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+  .empty{padding:28px 10px;text-align:center;color:var(--muted)}
+  .ui-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);
+          display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar a{flex:1;text-align:center;padding:9px 0 7px;color:var(--muted);font-size:11px}
+  .tabbar a.on{color:var(--primary);font-weight:600}
+  .tabbar a em{display:block;font-size:19px;font-style:normal;line-height:1.2}
+  #login{min-height:100vh;display:block;background:#f3f8f4;padding:0 0 30px}
+  .mobile-public-head{height:58px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:#135a37;font-size:14px;font-weight:700}
+  .mobile-public-brand{display:flex;align-items:center;gap:8px;min-width:0}
+  .mobile-public-brand img{width:29px;height:29px;flex:none}
+  .mobile-public-brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-public-head a{border:1px solid #b7d9c4;border-radius:7px;padding:5px 9px;font-size:12px}
+  .mobile-public-hero{height:255px;background:linear-gradient(90deg,#f5faefef,#f5faef73 58%,#fff0),url('/demo/hero.png') 60% center/cover;display:flex;align-items:center;padding:22px}
+  .mobile-public-hero small{color:#078b50;letter-spacing:2px;font-weight:700}
+  .mobile-public-hero h2{color:#075d39;margin:8px 0 4px;font-size:31px;line-height:1.2;font-family:'STKaiti','KaiTi',serif}
+  .mobile-public-hero p{margin:0 0 16px;color:#346849;font-size:12px}
+  .mobile-public-hero a{display:inline-block;background:#ef6d1d;color:#fff;border-radius:7px;padding:9px 13px;font-weight:700;font-size:12px}
+  .mobile-public-content{padding:14px}
+  .mobile-public-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:-26px;position:relative}
+  .mobile-public-metrics div{background:white;border-radius:10px;padding:12px;box-shadow:0 5px 15px #18462a16;border-top:2px solid #12a567}
+  .mobile-public-metrics span{display:block;color:#6d8073;font-size:11px}
+  .mobile-public-metrics strong{display:block;color:#096341;font-size:23px;line-height:1.5}
+  .mobile-public-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+  .mobile-public-actions a{background:#fff;border-radius:11px;padding:14px 11px;box-shadow:0 4px 14px #1b4b3010;color:#20533c}
+  .mobile-public-actions .ui-icon{display:block;width:23px;height:23px;color:var(--accent);margin-bottom:5px}
+  .mobile-public-actions b{display:block;font-size:15px}
+  .mobile-public-actions small{display:block;color:#788b7b;font-size:11px}
+  .mobile-public-section h2{font-size:21px;color:#173c2a;margin:23px 0 11px}
+  .mobile-public-products{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mobile-public-products a{background:#fff;border-radius:10px;overflow:hidden;color:#23402e;box-shadow:0 3px 12px #214d2d11}
+  .mobile-public-products img{width:100%;height:128px;object-fit:cover;display:block}
+  .mobile-public-products div{padding:9px}
+  .mobile-public-products b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-public-products small{display:block;color:#879588;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-public-products strong{color:#e96717;font-size:16px}
+  .mobile-public-park{background:white;border-radius:11px;overflow:hidden;margin-top:20px}
+  .mobile-public-park img{display:block;width:100%;height:145px;object-fit:cover}
+  .mobile-public-park div{padding:12px}
+  .mobile-public-park b{color:#165c39}
+  .mobile-public-park p{font-size:12px;color:#728277;margin:4px 0}
+  .mobile-public-deals{background:#fff;border-radius:11px;padding:0 12px}
+  .mobile-public-deals div{padding:10px 0;border-bottom:1px solid #edf2ed;display:flex;justify-content:space-between;gap:8px;font-size:12px}
+  .mobile-public-deals div:last-child{border-bottom:0}
+  .mobile-public-deals b{color:#274d35}
+  .mobile-public-deals strong{color:#e96518}
+  .mobile-public-enterprises{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mobile-public-enterprises a{background:#fff;border-radius:10px;overflow:hidden;color:#244633}
+  .mobile-public-enterprises img{width:100%;height:96px;object-fit:cover;display:block}
+  .mobile-public-enterprises .enterprise-identity{height:96px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(145deg,#e8f4ec,#f7fbf8);color:#206643;font-size:11px}
+  .mobile-public-enterprises .enterprise-identity img{width:28px;height:28px}
+  .mobile-public-enterprises b{display:block;padding:8px;font-size:12px;line-height:1.4}
+  .mobile-public-nav{position:fixed;bottom:0;left:0;right:0;z-index:25;display:flex;background:#fff;border-top:1px solid #e3ece5;padding-bottom:env(safe-area-inset-bottom)}
+  .mobile-public-nav a{flex:1;text-align:center;color:#677d6b;padding:6px 0;font-size:11px}
+  .mobile-public-nav a:first-child{color:#07864e;font-weight:700}
+  .mobile-public-nav .ui-icon{display:block;margin:0 auto 2px;width:19px;height:19px}
+  .tabbar .ui-icon{display:block;margin:0 auto 2px;width:19px;height:19px}
+  .mobile-public-footer,.mobile-workbench-footer{text-align:center;color:#72897a;font-size:11px;line-height:1.8;padding:2px 18px 76px}
+  .mobile-workbench-footer{padding-bottom:14px}
+  #login .box{background:#fff;border-radius:13px;padding:20px;margin:20px 14px;box-shadow:0 5px 18px #19482b14}
+  #login h1{margin:0 0 4px;font-size:19px;color:var(--primary)}
+  #login p{margin:0 0 18px;color:var(--muted);font-size:13px}
+  .fld{margin-bottom:12px}
+  .fld label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:99;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast div{background:rgba(18,38,28,.94);color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;max-width:88vw}
+  .toast div.err{background:rgba(209,67,67,.96)}
+  .mask{position:fixed;inset:0;background:rgba(12,24,18,.5);z-index:60;display:flex;align-items:flex-end}
+  .sheet{background:#fff;width:100%;border-radius:16px 16px 0 0;max-height:88vh;overflow:auto;padding-bottom:env(safe-area-inset-bottom)}
+  .sheet .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .sheet .bd{padding:14px 16px}
+  .sheet .ft{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:10px}
+  .sheet .ft .btn{flex:1}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  video{width:100%;border-radius:12px;background:#000;min-height:180px}
+  .trace-hero{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-radius:var(--radius);padding:18px}
+  .trace-hero h2{margin:0 0 4px;font-size:19px}
+  .step{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--line);margin-left:6px}
+  .step:last-child{border-left-color:transparent}
+  .step::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--primary-2);border:2px solid #fff}
+  .step b{font-size:14px}
+  .step .m{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="gz-home" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7v9H3zM9 20v-6h6v6"/></symbol>
+  <symbol id="gz-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="gz-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h17M8 15l4-4 3 2 5-6"/></symbol>
+  <symbol id="gz-store" viewBox="0 0 24 24"><path d="M4 9h16l-2-5H6zM5 9v11h14V9M9 20v-6h6v6"/></symbol>
+  <symbol id="gz-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></symbol>
+  <symbol id="gz-cart" viewBox="0 0 24 24"><path d="M3 4h2l2 12h12l2-9H6M9 20h.01M18 20h.01"/></symbol>
+  <symbol id="gz-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10"/></symbol>
+  <symbol id="gz-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3 8 8 11 5-3 8-6 8-11V5zM8 12l3 3 5-6"/></symbol>
+  <symbol id="gz-receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2zM8 8h8M8 12h8"/></symbol>
+  <symbol id="gz-warehouse" viewBox="0 0 24 24"><path d="m3 9 9-6 9 6v12H3zM8 21v-8h8v8"/></symbol>
+  <symbol id="gz-scan" viewBox="0 0 24 24"><path d="M8 3H4v4M16 3h4v4M4 17v4h4M20 17v4h-4M8 12h8M12 8v8"/></symbol>
+</svg>
+
+<!-- ============== 登录 ============== -->
+<div id="login">
+  <div class="mobile-public-head"><span class="mobile-public-brand"><img src="/static/images/logo/platform-mark.svg" alt="" /><span>第十师瓜子油料交易平台</span></span><a href="/account">我的需求 →</a></div>
+  <section class="mobile-public-hero"><div><small>第十师 · 北屯瓜子产业</small><h2>北屯瓜子<br />香飘全国</h2><p>产业资源展示 · 供需信息撮合</p><a href="/supply">查看供应大厅 →</a></div></section>
+  <div class="mobile-public-content">
+    <div class="mobile-public-metrics" id="mobilePublicMetrics"></div>
+    <div class="mobile-public-actions"><a href="/consult?action=purchase"><svg class="ui-icon"><use href="#gz-cart"/></svg><b>留下采购需求</b><small>无需注册，平台协助匹配</small></a><a href="/account"><svg class="ui-icon"><use href="#gz-box"/></svg><b>发布供应信息</b><small>企业认证后发布</small></a><a href="/supply"><svg class="ui-icon"><use href="#gz-chart"/></svg><b>供应大厅</b><small>查看产地货源</small></a><a href="/matching-service"><svg class="ui-icon"><use href="#gz-shield"/></svg><b>撮合服务</b><small>人工供需对接</small></a></div>
+    <section class="mobile-public-section"><h2>产地供应</h2><div class="mobile-public-products" id="mobilePublicProducts">正在读取供应信息…</div></section>
+    <section class="mobile-public-section"><h2>采购需求</h2><div class="mobile-public-deals" id="mobilePublicNeeds"></div><a class="btn sm" href="/procurement" style="margin-top:10px">查看采购大厅 →</a></section>
+    <section class="mobile-public-section"><h2>最近成交</h2><div class="mobile-public-deals" id="mobilePublicDeals"></div></section>
+    <section class="mobile-public-section"><h2>产业企业</h2><div class="mobile-public-enterprises" id="mobilePublicEnterprises"></div></section>
+    <section class="mobile-public-park"><img src="/demo/park.png" alt="瓜子油料加工园区场景示意" loading="lazy" decoding="async" /><div><b id="mobilePublicParkName">第十师北屯瓜子产业园</b><p id="mobilePublicParkDescription"></p></div></section>
+  </div>
+  <div class="box" id="merchantLogin">
+    <h1>瓜子油料交易平台</h1>
+    <p>第十师北屯市 · 移动端（商户 / 采购商）</p>
+    <form id="loginForm">
+      <div class="fld"><label>账号</label><input id="u" autocomplete="username" /></div>
+      <div class="fld"><label>密码</label><input id="p" type="password" autocomplete="current-password" /></div>
+      <button class="btn primary block" type="submit">登 录</button>
+    </form>
+    <p class="muted" style="font-size:12px;margin-top:14px;line-height:1.9">还没有账号？<a href="/register">注册普通用户</a>，申请认证后使用企业服务。</p>
+  </div>
+  <footer class="mobile-public-footer">© 2026 瓜子平台<br />技术支持：屯云大数据</footer>
+  <nav class="mobile-public-nav" aria-label="平台导航"><a href="/m/"><svg class="ui-icon"><use href="#gz-home"/></svg>首页</a><a href="/supply"><svg class="ui-icon"><use href="#gz-grid"/></svg>供应</a><a href="/procurement"><svg class="ui-icon"><use href="#gz-chart"/></svg>采购</a><a href="/enterprises"><svg class="ui-icon"><use href="#gz-store"/></svg>企业</a><a href="/account"><svg class="ui-icon"><use href="#gz-user"/></svg>我的</a></nav>
+</div>
+
+<!-- ============== 主体 ============== -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1 id="ttl">工作台</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <button class="act" id="logout">退出</button>
+  </div>
+  <div class="wrap" id="view"></div>
+  <footer class="mobile-workbench-footer">© 2026 瓜子平台 · 技术支持：屯云大数据</footer>
+  <nav class="tabbar" id="tabbar">
+    <a href="#/home" data-k="home"><svg class="ui-icon"><use href="#gz-home"/></svg>工作台</a>
+    <a href="#/products" data-k="products"><svg class="ui-icon"><use href="#gz-grid"/></svg>商品</a>
+    <a href="#/orders" data-k="orders"><svg class="ui-icon"><use href="#gz-receipt"/></svg>订单</a>
+    <a href="#/inventory" data-k="inventory"><svg class="ui-icon"><use href="#gz-warehouse"/></svg>库存</a>
+    <a href="#/scan" data-k="scan"><svg class="ui-icon"><use href="#gz-scan"/></svg>扫码</a>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="sheet"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+ * 移动端 H5（免构建）：商户发布商品、处理订单、查看库存、扫码溯源
+ * 直连真实 REST API：/api/v1/*，统一信封 {code,message,data}
+ * ========================================================================= */
+const API = "/api/v1";
+const store = { token: localStorage.getItem("gz_m_token") || "", user: null };
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v, d = 2) => Number(v ?? 0).toLocaleString("zh-CN", { minimumFractionDigits: d, maximumFractionDigits: d });
+const dt = (v) => (v ? String(v).replace("T", " ").slice(0, 16) : "-");
+let mobileShowcaseLoaded = false;
+async function loadMobileShowcase() {
+  if (mobileShowcaseLoaded) return;
+  try {
+    const response = await fetch(`${API}/showcase`);
+    if (!response.ok) throw new Error("展示接口暂不可用");
+    const payload = await response.json();
+    if (payload.code !== 0 || !payload.data) throw new Error(payload.message || "展示数据暂不可用");
+    const data = payload.data;
+    const metrics = [
+      ["入驻企业", data.metrics.enterprise_count, "家"],
+      ["供应信息", data.metrics.product_count, "条"],
+      ["采购需求", data.metrics.requirement_count, "条"],
+      ["撮合记录", data.metrics.match_count, "次"],
+    ];
+    $("#mobilePublicMetrics").innerHTML = metrics.map(([name, value, unit]) => `<div><span>${esc(name)}</span><strong>${num(value, 0)}<small>${esc(unit)}</small></strong></div>`).join("");
+    $("#mobilePublicProducts").innerHTML = (data.products || []).filter((p) => !["paused", "completed"].includes(p.supply_status)).slice(0, 6).map((p) => `<a href="/supply/${Number(p.id)}"><img src="${esc(p.image || '/demo/sunflower.png')}" alt="${esc(p.name)}" loading="lazy" decoding="async"/><div><b>${esc(p.name)}</b><small>${esc(p.enterprise)} · ${esc(p.origin || '产地待补充')}</small><strong>${esc(p.pricing_mode === 'inquiry' ? '面议' : p.pricing_mode === 'negotiable' ? '协商价' : '¥' + num(p.price, 0))}</strong><small> · ${num(p.supply_quantity || p.stock || 0, 0)} ${esc(p.unit === 'ton' ? '吨' : p.unit || '')} · 查看详情/咨询</small></div></a>`).join("") || "暂无公开供应信息";
+    $("#mobilePublicNeeds").innerHTML = (data.purchase_needs || []).slice(0, 3).map((need) => `<div><a href="/procurement"><b>${esc(need.title)}</b><small>${esc(need.purchase_region || '地区待协商')} · ${esc(need.buyer_enterprise_name || '')}</small></a><strong>${num(need.quantity, 0)} ${esc(need.unit === 'ton' ? '吨' : need.unit || '')}</strong></div>`).join("") || "暂无公开采购需求";
+    $("#mobilePublicDeals").innerHTML = (data.recent_deals || []).slice(0, 4).map((deal) => `<div><b>${esc(deal.product)}</b><strong>¥${num(deal.amount, 0)}</strong></div>`).join("") || "暂无成交订单";
+    $("#mobilePublicEnterprises").innerHTML = (data.enterprises || []).filter((item) => item.type !== "buyer").slice(0, 4).map((item) => `<a href="/enterprise/${Number(item.id)}">${item.image && !item.image.startsWith('/demo/') ? `<img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" decoding="async"/>` : `<span class="enterprise-identity"><img src="/static/images/logo/platform-mark.svg" alt=""/>产业企业</span>`}<b>${esc(item.name)}</b></a>`).join("") || "暂无入驻企业";
+    if (data.park) {
+      $("#mobilePublicParkName").textContent = data.park.name;
+      $("#mobilePublicParkDescription").textContent = data.park.description;
+    }
+    mobileShowcaseLoaded = true;
+  } catch (error) {
+    $("#mobilePublicProducts").textContent = error.message || "展示数据暂不可用";
+  }
+}
+const qs = (o) => { const p = new URLSearchParams(); Object.entries(o || {}).forEach(([k, v]) => { if (v !== "" && v != null) p.append(k, v); }); const s = p.toString(); return s ? "?" + s : ""; };
+function toast(msg, kind = "") { const b = $("#toast"); const d = document.createElement("div"); d.className = kind; d.textContent = msg; b.appendChild(d); setTimeout(() => d.remove(), 3200); }
+
+async function api(path, { method = "GET", body, query } = {}) {
+  const headers = { Accept: "application/json" };
+  if (store.token) headers.Authorization = "Bearer " + store.token;
+  let payload;
+  if (body !== undefined) { headers["Content-Type"] = "application/json"; payload = JSON.stringify(body); }
+  const res = await fetch(API + path + qs(query), { method, headers, body: payload });
+  const text = await res.text();
+  let data = null; try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+  if (res.status === 401) { store.token = ""; localStorage.removeItem("gz_m_token"); showLogin(); throw new Error((data && data.message) || "登录已失效"); }
+  if (!data) throw new Error("服务异常 HTTP " + res.status);
+  if (data.code !== 0) throw new Error(data.message || "请求失败");
+  return data.data;
+}
+const GET = (p, q) => api(p, { query: q });
+const POST = (p, b) => api(p, { method: "POST", body: b });
+
+const DICT = {
+  grade: { special: "特级", first: "一级", second: "二级", mixed: "统货" },
+  unit: { ton: "吨", kg: "千克", bag: "袋" },
+  product_status: { draft: ["草稿", ""], published: ["已上架", "green"], offline: ["已下架", ""], rejected: ["已驳回", "red"] },
+  order_status: { draft: ["草稿", ""], pending_confirm: ["待确认", "orange"], confirmed: ["已确认", "blue"], delivering: ["发货中", "blue"], completed: ["已完成", "green"], settled: ["已结算", "green"], cancelled: ["已取消", "red"] },
+  inquiry_status: { draft: ["草稿", ""], submitted: ["待报价", "orange"], quoted: ["已报价", "blue"], confirmed: ["已成交", "green"], cancelled: ["已取消", "red"], closed: ["已关闭", ""] },
+  quality_status: { pending: ["待检", "orange"], qualified: ["合格", "green"], unqualified: ["不合格", "red"] },
+  stall_status: { free: ["空闲", ""], rented: ["已租", "green"] },
+};
+const t = (g, k) => { const i = (DICT[g] || {})[k]; if (Array.isArray(i)) return `<span class="tag ${i[1]}">${esc(i[0])}</span>`; return `<span class="tag">${esc(i !== undefined ? i : (k ?? "-"))}</span>`; };
+const label = (g, k) => { const i = (DICT[g] || {})[k]; return Array.isArray(i) ? i[0] : (i !== undefined ? i : (k ?? "-")); };
+const can = (p) => !p || (store.user && (store.user.is_superuser || (store.user.permissions || []).includes(p)));
+
+/* ------------------------------ 底部弹层 ------------------------------ */
+function sheet({ title, bodyHtml, okText = "确定", onOk }) {
+  const root = $("#sheet");
+  root.innerHTML = `<div class="mask"><div class="sheet">
+      <div class="hd"><b>${esc(title)}</b><button class="btn sm" data-close>关闭</button></div>
+      <div class="bd">${bodyHtml}</div>
+      <div class="ft"><button class="btn" data-close>取消</button><button class="btn primary" data-ok>${esc(okText)}</button></div>
+    </div></div>`;
+  const close = () => (root.innerHTML = "");
+  root.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+  const ok = root.querySelector("[data-ok]");
+  ok.addEventListener("click", async () => {
+    if (!onOk) return close();
+    ok.disabled = true;
+    try { const keep = await onOk(root.querySelector(".sheet")); if (keep !== false) close(); }
+    catch (e) { toast(e.message, "err"); }
+    finally { ok.disabled = false; }
+  });
+  return { close };
+}
+
+/* -------------------------------- 路由 -------------------------------- */
+const VIEWS = {};
+const TITLES = { home: ["工作台", "商户经营 · 交易 · 库存"], products: ["我的商品", "发布与管理商品"], orders: ["订单处理", "确认 / 发货 / 完成"], inventory: ["库存查看", "仓库 · 批次 · 可用量"], scan: ["扫码溯源", "查询产品产地与检测报告"] };
+
+async function route() {
+  const hash = (location.hash || "#/home").replace(/^#\/?/, "");
+  const parts = hash.split("/").filter(Boolean);
+  const key = parts[0] || "home";
+  if (!store.user) return;
+  if (key === "trace" && parts[1]) return renderTrace(parts[1]);
+  const meta = TITLES[key] || TITLES.home;
+  $("#ttl").textContent = meta[0];
+  $("#sub").textContent = (store.user.full_name || store.user.username) + (store.user.enterprise_name ? " · " + store.user.enterprise_name : "");
+  document.querySelectorAll("#tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.k === key));
+  const view = $("#view");
+  view.innerHTML = `<div class="empty">加载中…</div>`;
+  try { await (VIEWS[key] || VIEWS.home)(view, parts[1]); }
+  catch (e) { view.innerHTML = `<div class="card"><div class="bd empty">加载失败：${esc(e.message)}<br/>请重试，或联系屯云大数据技术支持。</div></div>`; }
+}
+
+/* ------------------------------- 工作台 ------------------------------- */
+VIEWS.home = async (root) => {
+  const [me, overview, orders, warnings] = await Promise.all([
+    GET("/auth/me"),
+    GET("/dashboard/overview", { refresh: true }).catch(() => null),
+    GET("/orders", { role: "all", page_size: 50 }).catch(() => ({ items: [], total: 0 })),
+    GET("/inventory/warnings").catch(() => []),
+  ]);
+  store.user = me;
+  const pendingConfirm = orders.items.filter((o) => o.status === "pending_confirm").length;
+  const toDeliver = orders.items.filter((o) => o.status === "confirmed").length;
+  const myOrders = orders.items.length;
+  root.innerHTML = `
+    <div class="card"><div class="bd">
+      <div style="font-size:16px;font-weight:700">${esc(me.enterprise_name || "未关联企业")}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">
+        ${esc(me.full_name || me.username)}　角色：${esc((me.role_names || []).join("、") || "-")}<br />
+        企业编码：${esc(me.enterprise_name ? "已绑定" : "未绑定")}　园区：${esc(me.park_id ? "已入驻" : "-")}
+      </div>
+    </div></div>
+    <div class="kpis" style="margin-bottom:12px">
+      <div class="kpi"><div class="k">待确认订单</div><div class="v">${pendingConfirm}</div></div>
+      <div class="kpi"><div class="k">待发货订单</div><div class="v">${toDeliver}</div></div>
+      <div class="kpi"><div class="k">参与订单</div><div class="v">${myOrders}</div></div>
+      <div class="kpi"><div class="k">库存预警</div><div class="v" style="color:${warnings.length ? "#d14343" : "#1d6f42"}">${warnings.length}</div></div>
+    </div>
+    ${overview ? `<div class="card"><div class="hd"><b>平台产业概览</b></div><div class="bd">
+      <div class="grid2">
+        <div><div class="muted" style="font-size:12px">入驻企业</div><b>${overview.enterprise_count} 家</b></div>
+        <div><div class="muted" style="font-size:12px">在售商品</div><b>${overview.published_product_count} 个</b></div>
+        <div><div class="muted" style="font-size:12px">库存总量</div><b>${num(overview.inventory_quantity, 0)} 吨</b></div>
+        <div><div class="muted" style="font-size:12px">累计成交</div><b>${num(overview.order_amount, 0)} 元</b></div>
+      </div></div></div>` : ""}
+    ${warnings.length ? `<div class="card"><div class="hd"><b>库存预警</b><span class="muted" style="font-size:12px">可用低于预警值</span></div><div class="bd">
+      ${warnings.map((w) => `<div class="row"><div><div class="t">${esc(w.product_name)}</div><div class="d">预警值 ${num(w.warn_qty, 3)} 吨</div></div>
+        <div class="price">可用 ${num(w.available_quantity, 3)}</div></div>`).join("")}</div></div>` : ""}
+    ${pendingConfirm || toDeliver ? `<div class="card"><div class="hd"><b>待我处理</b></div><div class="bd">
+      ${orders.items.filter((o) => ["pending_confirm", "confirmed"].includes(o.status)).slice(0, 5).map((o) => `
+        <div class="row"><div><div class="t">${esc(o.order_no)}</div>
+          <div class="d">${esc(o.buyer_enterprise_name || "")} → ${esc(o.supplier_enterprise_name || "")}　${t("order_status", o.status)}</div></div>
+          <button class="btn sm primary" data-order="${o.id}">处理</button></div>`).join("")}
+    </div></div>` : ""}`;
+  root.querySelectorAll("[data-order]").forEach((b) => b.addEventListener("click", () => orderSheet(b.dataset.order)));
+};
+
+/* ------------------------------- 我的商品 ------------------------------ */
+VIEWS.products = async (root) => {
+  const render = async () => {
+    const data = await GET("/products", { page: 1, page_size: 50 });
+    root.innerHTML = `
+      <div class="card"><div class="hd"><b>商品（${data.total}）</b>
+        ${can("product:write") ? `<button class="btn sm primary" data-new>发布商品</button>` : ""}</div>
+        <div class="bd">${data.items.length ? data.items.map((p) => `
+          <div class="row">
+            <div style="flex:1;min-width:0">
+              <div class="t">${esc(p.name)}</div>
+              <div class="d">${esc(p.category_name || "")} · ${esc(label("grade", p.grade))} · ${esc(p.origin || "")} ${esc(p.harvest_year || "")}</div>
+              <div class="d"><span class="price">${num(p.price)} 元/${esc(label("unit", p.unit))}</span>　可用 ${num(p.available_quantity, 3)} 吨</div>
+              <div style="margin-top:6px">${t("product_status", p.status)} ${p.audit_status !== "approved" ? t("quality_status", "pending") : ""} ${t("quality_status", p.quality_status)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              ${can("product:write") && p.status !== "published" && p.audit_status === "approved" ? `<button class="btn sm" data-pub="${p.id}">上架</button>` : ""}
+              ${can("product:write") && p.status === "published" ? `<button class="btn sm" data-off="${p.id}">下架</button>` : ""}
+            </div>
+          </div>`).join("") : `<div class="empty">暂无商品，点击右上角发布</div>`}</div></div>`;
+    const nb = root.querySelector("[data-new]");
+    if (nb) nb.addEventListener("click", productSheet);
+    root.querySelectorAll("[data-pub]").forEach((b) => b.addEventListener("click", () => act(`/products/${b.dataset.pub}/publish`, "已上架", render)));
+    root.querySelectorAll("[data-off]").forEach((b) => b.addEventListener("click", () => act(`/products/${b.dataset.off}/offline`, "已下架", render)));
+  };
+  await render();
+};
+
+async function act(path, okMsg, done) { try { await POST(path, {}); toast(okMsg, "ok"); if (done) await done(); } catch (e) { toast(e.message, "err"); } }
+
+async function productSheet() {
+  const tree = await GET("/categories/tree");
+  const opts = [];
+  const walk = (n, d) => n.forEach((x) => { opts.push(`<option value="${x.id}">${"　".repeat(d)}${esc(x.name)}</option>`); if (x.children) walk(x.children, d + 1); });
+  walk(tree, 0);
+  sheet({
+    title: "发布商品", okText: "提交审核",
+    bodyHtml: `
+      <div class="fld"><label>商品名称 *</label><input name="name" placeholder="如：北屯葵花籽" /></div>
+      <div class="fld"><label>分类 *</label><select name="category_id">${opts.join("")}</select></div>
+      <div class="fld"><label>规格</label><input name="spec" placeholder="千粒重≥180g，水分≤9%" /></div>
+      <div class="grid2">
+        <div class="fld"><label>等级</label><select name="grade"><option value="special">特级</option><option value="first">一级</option><option value="second">二级</option><option value="mixed">统货</option></select></div>
+        <div class="fld"><label>单位</label><select name="unit"><option value="ton">吨</option><option value="kg">千克</option><option value="bag">袋</option></select></div>
+        <div class="fld"><label>产地</label><input name="origin" value="新疆北屯" /></div>
+        <div class="fld"><label>年份</label><input name="harvest_year" value="2025" /></div>
+        <div class="fld"><label>价格（元/单位）</label><input name="price" type="number" step="0.01" value="6800" /></div>
+        <div class="fld"><label>库存预警值</label><input name="stock_warn_qty" type="number" step="0.001" value="20" /></div>
+      </div>
+      <div class="fld"><label>包装</label><input name="package" value="50kg 编织袋" /></div>
+      <div class="fld"><label>质检状态</label><select name="quality_status"><option value="qualified">合格</option><option value="pending">待检</option></select></div>
+      <div class="muted" style="font-size:12px">提交后进入平台待审核状态，审核通过后可在本页上架。</div>`,
+    onOk: async (m) => {
+      const g = (n) => m.querySelector(`[name="${n}"]`);
+      if (!g("name").value.trim()) { toast("请填写商品名称", "err"); return false; }
+      const created = await POST("/products", {
+        name: g("name").value.trim(),
+        category_id: Number(g("category_id").value),
+        spec: g("spec").value.trim() || null,
+        grade: g("grade").value,
+        unit: g("unit").value,
+        origin: g("origin").value.trim() || null,
+        harvest_year: g("harvest_year").value.trim() || null,
+        package: g("package").value.trim() || null,
+        price: Number(g("price").value || 0),
+        stock_warn_qty: Number(g("stock_warn_qty").value || 0),
+        quality_status: g("quality_status").value,
+      });
+      toast("商品 " + created.code + " 已提交审核", "ok");
+      await route();
+    },
+  });
+}
+
+/* -------------------------------- 订单处理 ------------------------------ */
+VIEWS.orders = async (root) => {
+  const render = async () => {
+    const data = await GET("/orders", { role: "all", page: 1, page_size: 50 });
+    root.innerHTML = `<div class="card"><div class="hd"><b>我的订单（${data.total}）</b><span class="muted" style="font-size:12px">点击卡片处理</span></div>
+      <div class="bd">${data.items.length ? data.items.map((o) => `
+        <div class="row" data-open="${o.id}">
+          <div style="flex:1;min-width:0">
+            <div class="t mono">${esc(o.order_no)}</div>
+            <div class="d">${esc(o.supplier_enterprise_name || "")} ← ${esc(o.buyer_enterprise_name || "")}</div>
+            <div class="d">${o.item_count} 项 / ${num(o.total_quantity, 3)} 吨　${dt(o.created_at)}</div>
+            <div style="margin-top:6px">${t("order_status", o.status)}</div>
+          </div>
+          <div style="text-align:right"><div class="price">${num(o.total_amount)}</div><div class="muted" style="font-size:12px">元</div></div>
+        </div>`).join("") : `<div class="empty">暂无订单</div>`}</div></div>`;
+    root.querySelectorAll("[data-open]").forEach((r) => r.addEventListener("click", () => orderSheet(r.dataset.open)));
+  };
+  await render();
+};
+
+async function orderSheet(id) {
+  const [d, timeline] = await Promise.all([GET(`/orders/${id}`), GET(`/orders/${id}/timeline`)]);
+  const items = d.items.map((i) => `<div class="row"><div><div class="t">${esc(i.product_name || "")}</div>
+      <div class="d">批次 ${esc(i.batch_no || "-")}　单价 ${num(i.unit_price)}</div></div>
+      <div style="text-align:right"><b>${num(i.quantity, 3)}</b> 吨<div class="muted" style="font-size:12px">已发 ${num(i.delivered_quantity, 3)}</div></div></div>`).join("");
+  const steps = timeline.map((s) => `<div class="step"><b>${esc(s.title)}</b><div class="m">${dt(s.occurred_at)} ${esc(s.description || "")}</div></div>`).join("");
+  const actions = [];
+  if (can("trade:write")) {
+    if (d.status === "pending_confirm") actions.push(`<button class="btn primary block" data-act="confirm">确认订单（扣减库存）</button>`);
+    if (d.status === "confirmed") actions.push(`<button class="btn primary block" data-act="deliver">发货</button>`);
+    if (d.status === "delivering") actions.push(`<button class="btn primary block" data-act="complete">订单完成</button>`);
+    if (["pending_confirm", "confirmed", "delivering"].includes(d.status)) actions.push(`<button class="btn block" data-act="cancel">取消订单</button>`);
+  }
+  sheet({
+    title: "订单 " + d.order_no, okText: "关闭", onOk: () => true,
+    bodyHtml: `
+      <div class="grid2" style="margin-bottom:10px">
+        <div class="kpi"><div class="k">状态</div><div class="v" style="font-size:15px">${label("order_status", d.status)}</div></div>
+        <div class="kpi"><div class="k">价税合计</div><div class="v">${num(d.total_amount)}</div></div>
+      </div>
+      <div class="muted" style="font-size:12px;margin-bottom:8px">
+        采购方：${esc(d.buyer_enterprise_name || "-")}<br />供应方：${esc(d.supplier_enterprise_name || "-")}<br />
+        收货：${esc(d.delivery_address || "-")}　物流：${esc(d.logistics_company || "-")} ${esc(d.logistics_no || "")}
+      </div>
+      <div class="card"><div class="bd">${items}</div></div>
+      <b>状态轨迹</b><div style="margin-top:8px">${steps}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${actions.join("")}</div>`,
+  });
+  const root = $("#sheet");
+  root.querySelectorAll("[data-act]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const kind = b.dataset.act;
+      try {
+        if (kind === "confirm") await POST(`/orders/${id}/confirm`, {});
+        else if (kind === "deliver") await POST(`/orders/${id}/deliver`, {
+          items: d.items.map((i) => ({ item_id: i.id, delivered_quantity: i.quantity })),
+          logistics_company: "北屯物流有限公司",
+          logistics_no: "BTWL" + String(Date.now()).slice(-8),
+        });
+        else if (kind === "complete") await POST(`/orders/${id}/complete`, {});
+        else if (kind === "cancel") await POST(`/orders/${id}/cancel`, { reason: "移动端取消" });
+        toast("操作成功", "ok");
+        $("#sheet").innerHTML = "";
+        await route();
+      } catch (e) { toast(e.message, "err"); }
+    })
+  );
+}
+
+/* -------------------------------- 库存查看 ------------------------------ */
+VIEWS.inventory = async (root) => {
+  const render = async () => {
+    const [rows, warehouses] = await Promise.all([GET("/inventory", { page: 1, page_size: 50 }), GET("/warehouses")]);
+    root.innerHTML = `
+      <div class="card"><div class="hd"><b>库存明细（${rows.total}）</b>
+        ${can("inventory:execute") ? `<button class="btn sm primary" data-in>入库</button>` : ""}</div>
+        <div class="bd">${rows.items.length ? rows.items.map((r) => `
+          <div class="row"><div style="flex:1;min-width:0">
+            <div class="t">${esc(r.product_name)}</div>
+            <div class="d">${esc(r.warehouse_name)}${r.location_name ? " · " + esc(r.location_name) : ""} · 批次 ${esc(r.batch_no)}</div>
+            <div class="d">账面 ${num(r.quantity, 3)}　预占 ${num(r.locked_quantity, 3)}</div>
+          </div><div style="text-align:right">
+            <div class="price">${num(r.available_quantity, 3)}</div><div class="muted" style="font-size:12px">可用(吨)</div>
+          </div></div>`).join("") : `<div class="empty">暂无库存</div>`}</div></div>
+      <div class="card"><div class="hd"><b>仓库</b></div><div class="bd">
+        ${warehouses.length ? warehouses.map((w) => `<div class="row"><div><div class="t">${esc(w.name)}</div>
+          <div class="d mono">${esc(w.code)} · 库位 ${w.location_count} 个</div></div>
+          <div style="text-align:right"><b>${num(w.inventory_quantity, 3)}</b><div class="muted" style="font-size:12px">吨</div></div></div>`).join("") : `<div class="empty">暂无仓库</div>`}
+      </div></div>`;
+    const btn = root.querySelector("[data-in]");
+    if (btn)
+      btn.addEventListener("click", async () => {
+        const products = await GET("/products", { page_size: 200 });
+        sheet({
+          title: "快捷入库", okText: "确认入库",
+          bodyHtml: `<div class="fld"><label>商品</label><select name="product_id">
+              ${products.items.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>
+            <div class="fld"><label>仓库</label><select name="warehouse_id">
+              ${warehouses.map((w) => `<option value="${w.id}">${esc(w.name)}</option>`).join("")}</select></div>
+            <div class="fld"><label>批次号</label><input name="batch_no" value="DEFAULT" /></div>
+            <div class="fld"><label>数量（吨）</label><input name="quantity" type="number" step="0.001" value="100" /></div>
+            <div class="fld"><label>单位成本（元/吨）</label><input name="unit_cost" type="number" step="0.01" value="6000" /></div>`,
+          onOk: async (m) => {
+            const g = (n) => m.querySelector(`[name="${n}"]`);
+            const qty = Number(g("quantity").value);
+            if (!(qty > 0)) { toast("数量必须大于 0", "err"); return false; }
+            await POST("/inventory/in", {
+              product_id: Number(g("product_id").value),
+              warehouse_id: Number(g("warehouse_id").value),
+              batch_no: g("batch_no").value.trim() || "DEFAULT",
+              quantity: qty,
+              unit_cost: Number(g("unit_cost").value || 0),
+              quality_status: "qualified",
+            });
+            toast("入库成功", "ok");
+            await render();
+          },
+        });
+      });
+  };
+  await render();
+};
+
+/* -------------------------------- 扫码溯源 ------------------------------ */
+VIEWS.scan = async (root) => {
+  root.innerHTML = `
+    <div class="card"><div class="hd"><b>扫码 / 输入批次号</b></div><div class="bd">
+      <div class="fld"><label>批次号</label><input id="batchInput" placeholder="如 GZ-BATCH-2025-0001" /></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn primary" style="flex:1" id="queryBtn">查询溯源</button>
+        <button class="btn" style="flex:1" id="camBtn">开启摄像头</button>
+      </div>
+      <video id="cam" style="display:none;margin-top:12px" playsinline muted></video>
+      <div class="muted" style="font-size:12px;margin-top:10px" id="camTip">
+        手机浏览器可用摄像头识别批次二维码（需 HTTPS 或 localhost 环境）；也可直接输入批次号查询。
+      </div>
+    </div></div>
+    <div class="card"><div class="hd"><b>最近批次</b></div><div class="bd">
+      ${(await GET("/trace/batches", { page_size: 10 }).catch(() => ({ items: [] }))).items
+        .map((b) => `<div class="row" data-batch="${esc(b.batch_no)}"><div><div class="t">${esc(b.batch_no)}</div>
+          <div class="d">${esc(b.product_name || "")} · ${esc(b.enterprise_name || "")}</div></div>
+          <span class="tag green">查看</span></div>`).join("") || `<div class="empty">暂无批次</div>`}
+    </div></div>`;
+  $("#queryBtn").addEventListener("click", () => {
+    const v = $("#batchInput").value.trim();
+    if (!v) return toast("请输入批次号", "err");
+    location.hash = "#/trace/" + encodeURIComponent(v);
+  });
+  root.querySelectorAll("[data-batch]").forEach((r) => r.addEventListener("click", () => { location.hash = "#/trace/" + encodeURIComponent(r.dataset.batch); }));
+  $("#camBtn").addEventListener("click", startCamera);
+};
+
+async function startCamera() {
+  const video = $("#cam");
+  const tip = $("#camTip");
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { tip.textContent = "当前浏览器不支持摄像头调用，请手工输入批次号。"; return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.style.display = "block";
+    video.srcObject = stream;
+    await video.play();
+    if ("BarcodeDetector" in window) {
+      const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+      tip.textContent = "摄像头已开启，正在识别二维码…";
+      const tick = async () => {
+        if (!video.srcObject) return;
+        try {
+          const codes = await detector.detect(video);
+          if (codes && codes.length) {
+            const raw = codes[0].rawValue || "";
+            const batch = raw.split("/").filter(Boolean).pop();
+            stream.getTracks().forEach((tr) => tr.stop());
+            video.style.display = "none";
+            tip.textContent = "识别成功：" + batch;
+            location.hash = "#/trace/" + encodeURIComponent(batch);
+            return;
+          }
+        } catch (e) { /* 继续重试 */ }
+        requestAnimationFrame(() => setTimeout(tick, 500));
+      };
+      tick();
+    } else {
+      tip.textContent = "当前浏览器不支持二维码自动识别，请手工输入批次号（摄像头画面可用于人工比对）。";
+    }
+  } catch (e) {
+    tip.textContent = "无法访问摄像头（" + e.message + "），请手工输入批次号。";
+  }
+}
+
+async function renderTrace(batchNo) {
+  $("#ttl").textContent = "产品溯源";
+  $("#sub").textContent = batchNo;
+  document.querySelectorAll("#tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.k === "scan"));
+  const view = $("#view");
+  view.innerHTML = `<div class="empty">查询中…</div>`;
+  try {
+    const res = await fetch(`${API}/trace/public/${encodeURIComponent(batchNo)}`);
+    const d = await res.json();
+    if (!d || d.batch_no === undefined) throw new Error("查询失败");
+    const steps = (d.events || []).map((e) => `<div class="step"><b>${esc(e.title)}</b>
+        <div class="m">${esc(e.stage)} · ${dt(e.occurred_at)} · ${esc(e.location || "-")}</div>
+        <div class="m">${esc(e.description || "")}</div></div>`).join("");
+    view.innerHTML = `
+      <div class="trace-hero">
+        <h2>${esc(d.verified ? "✅ 溯源信息已登记" : "⚠️ 未查询到该批次")}</h2>
+        <div style="font-size:13px;opacity:.9">${esc(d.message || "")}</div>
+        <div class="mono" style="margin-top:8px">批次号：${esc(d.batch_no)}</div>
+      </div>
+      ${d.verified || d.product_name ? `
+      <div class="card" style="margin-top:12px"><div class="hd"><b>产品信息</b></div><div class="bd">
+        <div class="row"><span class="muted">商品名称</span><b>${esc(d.product_name || "-")}</b></div>
+        <div class="row"><span class="muted">商品编码</span><span class="mono">${esc(d.product_code || "-")}</span></div>
+        <div class="row"><span class="muted">规格 / 等级</span><span>${esc(d.spec || "-")} / ${esc(label("grade", d.grade))}</span></div>
+        <div class="row"><span class="muted">产地 / 年份</span><span>${esc(d.origin || d.origin_region || "-")} ${esc(d.harvest_year || "")}</span></div>
+        <div class="row"><span class="muted">包装</span><span>${esc(d.package || "-")}</span></div>
+        <div class="row"><span class="muted">质检</span>${t("quality_status", d.quality_status)}</div>
+        <div class="row"><span class="muted">检测报告</span>${d.test_report_url ? `<a href="${esc(d.test_report_url)}" target="_blank">查看报告</a>` : "<span class='muted'>未上传</span>"}</div>
+      </div></div>
+      <div class="card"><div class="hd"><b>生产主体</b></div><div class="bd">
+        <div class="row"><span class="muted">企业</span><b>${esc(d.enterprise_name || "-")}</b></div>
+        <div class="row"><span class="muted">企业编码</span><span class="mono">${esc(d.enterprise_code || "-")}</span></div>
+        <div class="row"><span class="muted">种植基地</span><span>${esc(d.origin_base || "-")}</span></div>
+        <div class="row"><span class="muted">播种 / 采收</span><span>${esc(d.plant_date || "-")} / ${esc(d.harvest_date || "-")}</span></div>
+        <div class="row"><span class="muted">加工企业</span><span>${esc(d.process_enterprise || "-")} ${esc(d.process_date || "")}</span></div>
+        <div class="row"><span class="muted">仓储</span><span>${esc(d.warehouse_name || "-")}</span></div>
+      </div></div>
+      <div class="card"><div class="hd"><b>全程链路</b></div><div class="bd">${steps || `<div class="empty">暂无链路事件</div>`}</div></div>` : ""}
+      <button class="btn block" id="again">继续扫码</button>`;
+    $("#again").addEventListener("click", () => (location.hash = "#/scan"));
+  } catch (e) {
+    view.innerHTML = `<div class="card"><div class="bd empty">查询失败：${esc(e.message)}</div></div>`;
+  }
+}
+
+/* -------------------------------- 启动 -------------------------------- */
+function showLogin() { $("#app").style.display = "none"; $("#login").style.display = "block"; loadMobileShowcase(); }
+function showApp() { $("#login").style.display = "none"; $("#app").style.display = "block"; route(); }
+
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    const data = await api("/auth/login", { method: "POST", body: { username: $("#u").value.trim(), password: $("#p").value } });
+    store.token = data.access_token;
+    store.user = data.user;
+    localStorage.setItem("gz_m_token", store.token);
+    toast("登录成功", "ok");
+    showApp();
+  } catch (err) { toast(err.message, "err"); }
+});
+$("#logout").addEventListener("click", async () => {
+  try { await POST("/auth/logout", {}); } catch (e) { /* ignore */ }
+  store.token = ""; store.user = null; localStorage.removeItem("gz_m_token"); showLogin();
+});
+window.addEventListener("hashchange", () => { if (store.user) route(); });
+
+(async function boot() {
+  if (!store.token) return showLogin();
+  try { store.user = await GET("/auth/me"); showApp(); } catch (e) { showLogin(); }
+})();
+</script>
+</body>
+</html>

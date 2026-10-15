@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gz_merchant_qualification_admin,gz.merchant.qualification platform admin,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_merchant_qualification_park,gz.merchant.qualification park operator,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_park_operator,1,1,0,0
+access_gz_merchant_qualification_merchant,gz.merchant.qualification merchant,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_merchant_qualification_supplier,gz.merchant.qualification supplier,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_merchant_qualification_buyer,gz.merchant.qualification buyer,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_merchant_qualification_finance,gz.merchant.qualification finance,gz_merchant.model_gz_merchant_qualification,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_merchant_entry_admin,gz.merchant.entry platform admin,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_merchant_entry_park,gz.merchant.entry park operator,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_merchant_entry_merchant,gz.merchant.entry merchant,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_merchant_entry_supplier,gz.merchant.entry supplier,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_merchant_entry_buyer,gz.merchant.entry buyer,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_buyer,1,0,0,0
+access_gz_merchant_entry_finance,gz.merchant.entry finance,gz_merchant.model_gz_merchant_entry,gz_platform_base.group_gz_finance,1,0,0,0

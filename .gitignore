@@ -26,3 +26,10 @@ deploy/releases/
 deploy/staging/
 deploy/acceptance/
 
+dist/
+build/
+
+
+目标图/
+
+

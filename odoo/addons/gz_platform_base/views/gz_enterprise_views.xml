@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         企业主体：列表
+         ================================================================== -->
+    <record id="view_gz_enterprise_tree" model="ir.ui.view">
+        <field name="name">gz.enterprise.tree</field>
+        <field name="model">gz.enterprise</field>
+        <field name="arch" type="xml">
+            <tree string="企业主体"
+                  decoration-danger="audit_status == 'rejected'"
+                  decoration-warning="audit_status == 'pending'"
+                  decoration-muted="status == 'disabled'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="enterprise_type"/>
+                <field name="unified_social_credit_code" optional="show"/>
+                <field name="legal_person" optional="hide"/>
+                <field name="contact_name" optional="hide"/>
+                <field name="contact_phone" optional="hide"/>
+                <field name="region" optional="hide"/>
+                <field name="park_name" optional="show"/>
+                <field name="audit_status"/>
+                <field name="status"/>
+                <field name="partner_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         企业主体：表单
+         ================================================================== -->
+    <record id="view_gz_enterprise_form" model="ir.ui.view">
+        <field name="name">gz.enterprise.form</field>
+        <field name="model">gz.enterprise</field>
+        <field name="arch" type="xml">
+            <form string="企业主体">
+                <header>
+                    <button name="action_approve" type="object" string="审核通过"
+                            class="oe_highlight"
+                            invisible="audit_status == 'approved'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <button name="action_reject" type="object" string="审核驳回"
+                            invisible="audit_status == 'rejected'"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <button name="action_sync_partner" type="object" string="同步往来单位"
+                            groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                    <button name="action_set_disabled" type="object" string="停用"
+                            invisible="status == 'disabled'"
+                            groups="gz_platform_base.group_gz_platform_admin"/>
+                    <button name="action_set_active" type="object" string="启用"
+                            invisible="status == 'active'"
+                            groups="gz_platform_base.group_gz_platform_admin"/>
+                    <field name="audit_status" widget="statusbar" statusbar_visible="pending,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="企业名称"/>
+                        <h1><field name="name" placeholder="请输入企业全称"/></h1>
+                    </div>
+                    <group>
+                        <group name="gz_enterprise_main" string="基本信息">
+                            <field name="code"/>
+                            <field name="enterprise_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="unified_social_credit_code"/>
+                            <field name="legal_person"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="registered_capital"/>
+                            <field name="business_scope" placeholder="营业执照登记的经营范围"/>
+                        </group>
+                        <group name="gz_enterprise_side" string="联系与归属">
+                            <field name="contact_name"/>
+                            <field name="contact_phone"/>
+                            <field name="email" widget="email"/>
+                            <field name="region"/>
+                            <field name="address"/>
+                            <field name="park_name"/>
+                            <field name="status" widget="badge"/>
+                            <field name="platform_code"/>
+                        </group>
+                    </group>
+                    <group string="平台审核">
+                        <group>
+                            <field name="audited_user_id"/>
+                            <field name="audited_date"/>
+                        </group>
+                        <group>
+                            <field name="audit_remark"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="往来单位" name="gz_partner">
+                            <group>
+                                <field name="partner_id"/>
+                            </group>
+                            <field name="partner_user_ids" readonly="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="login"/>
+                                    <field name="email"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="备注" name="gz_remark">
+                            <field name="remark" placeholder="平台运营备注"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         企业主体：搜索
+         ================================================================== -->
+    <record id="view_gz_enterprise_search" model="ir.ui.view">
+        <field name="name">gz.enterprise.search</field>
+        <field name="model">gz.enterprise</field>
+        <field name="arch" type="xml">
+            <search string="企业主体">
+                <field name="name" string="企业名称"
+                       filter_domain="['|', '|', ('name', 'ilike', self), ('code', 'ilike', self), ('unified_social_credit_code', 'ilike', self)]"/>
+                <field name="code"/>
+                <field name="unified_social_credit_code"/>
+                <field name="contact_name"/>
+                <field name="contact_phone"/>
+                <field name="park_name"/>
+                <filter name="filter_pending" string="待审核" domain="[('audit_status', '=', 'pending')]"/>
+                <filter name="filter_approved" string="审核通过" domain="[('audit_status', '=', 'approved')]"/>
+                <filter name="filter_active" string="启用" domain="[('status', '=', 'active')]"/>
+                <separator/>
+                <filter name="filter_merchant" string="商户" domain="[('enterprise_type', '=', 'merchant')]"/>
+                <filter name="filter_supplier" string="供应商" domain="[('enterprise_type', '=', 'supplier')]"/>
+                <filter name="filter_buyer" string="采购商" domain="[('enterprise_type', '=', 'buyer')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_enterprise_type" string="企业类型" context="{'group_by': 'enterprise_type'}"/>
+                    <filter name="group_audit_status" string="审核状态" context="{'group_by': 'audit_status'}"/>
+                    <filter name="group_park" string="所属园区" context="{'group_by': 'park_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         企业主体：动作
+         ================================================================== -->
+    <record id="action_gz_enterprise" model="ir.actions.act_window">
+        <field name="name">企业主体</field>
+        <field name="res_model">gz.enterprise</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_enterprise_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有企业主体</p>
+            <p>企业主体与 res.partner 往来单位一一对应，审核通过后可同步往来单位。</p>
+        </field>
+    </record>
+
+</odoo>

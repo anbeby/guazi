@@ -1,0 +1,203 @@
+/* 全局基础样式：变量、重置、布局辅助类、Element Plus 微调 */
+
+:root {
+  --gz-primary: #0b6841;
+  --gz-primary-light: #e8f4ec;
+  --gz-accent: #e86b1d;
+  --gz-header-height: 56px;
+  --gz-tags-height: 38px;
+  --gz-sidebar-width: 224px;
+  --gz-sidebar-collapsed-width: 64px;
+  --gz-page-bg: #f3f7f4;
+  --gz-border: #e1ebe4;
+  --gz-text-main: #193628;
+  --gz-text-sub: #64776b;
+
+  /* 覆盖 Element Plus 主色为瓜子油料平台绿 */
+  --el-color-primary: #0b6841;
+  --el-color-primary-light-3: #4c8f6c;
+  --el-color-primary-light-5: #7bb094;
+  --el-color-primary-light-7: #aed0be;
+  --el-color-primary-light-8: #c8e0d5;
+  --el-color-primary-light-9: #e8f4ec;
+  --el-color-primary-dark-2: #114f31;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--gz-page-bg);
+  color: var(--gz-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--gz-primary);
+  text-decoration: none;
+}
+
+/* 页面容器 */
+.page-container {
+  padding: 16px;
+}
+
+.page-card {
+  background: #fff;
+  border: 1px solid var(--gz-border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 5px 20px rgba(20, 73, 44, 0.045);
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.page-title__sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gz-text-sub);
+  margin-left: 8px;
+}
+
+/* 查询表单 */
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  align-items: flex-start;
+}
+
+.search-form .el-form-item {
+  margin-bottom: 12px;
+  margin-right: 12px;
+}
+
+/* 表格上方工具条 */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+/* 文本辅助 */
+.text-sub {
+  color: var(--gz-text-sub);
+}
+
+.text-mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.text-amount {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+.mt-12 {
+  margin-top: 12px;
+}
+.mb-12 {
+  margin-bottom: 12px;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* NProgress 配色 */
+#nprogress .bar {
+  background: var(--gz-primary) !important;
+  height: 2px;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--gz-primary), 0 0 5px var(--gz-primary);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c8ccd4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Shared controls and states across management pages. */
+.el-button { font-weight: 600; border-radius: 8px; }
+.el-button--primary { box-shadow: 0 4px 12px rgba(11, 104, 65, .12); }
+.el-tag { border-radius: 6px; font-weight: 600; }
+.el-input__wrapper, .el-select__wrapper { border-radius: 8px; }
+.el-dialog { border-radius: 14px; max-width: calc(100vw - 24px); }
+.el-table { --el-table-border-color: var(--gz-border); }
+.el-table th.el-table__cell { background: #f6faf7; color: #42634e; font-weight: 700; }
+.el-empty__description p { color: var(--gz-text-sub); font-size: 13px; }
+.el-message { max-width: calc(100vw - 24px); }
+
+@media (max-width: 650px) {
+  .el-dialog .el-col-12 { max-width: 100%; flex: 0 0 100%; }
+  .page-container { padding: 10px; }
+  .page-card { padding: 14px; margin-bottom: 12px; }
+  .page-title { align-items: flex-start; gap: 8px; font-size: 16px; }
+  .page-title__sub { display: block; margin: 4px 0 0; line-height: 1.5; }
+  .table-pagination { overflow-x: auto; justify-content: flex-start; }
+}
+
+/* 深色主题（最小可用实现） */
+html.dark {
+  --gz-page-bg: #14181f;
+  --gz-border: #2c323c;
+  --gz-text-main: #e6e8eb;
+  --gz-text-sub: #9aa3af;
+  color-scheme: dark;
+}
+html.dark body {
+  background: var(--gz-page-bg);
+  color: var(--gz-text-main);
+}
+html.dark .page-card {
+  background: #1c222b;
+}

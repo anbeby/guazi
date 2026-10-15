@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         仓储参数：列表
+         ================================================================== -->
+    <record id="view_gz_warehouse_config_tree" model="ir.ui.view">
+        <field name="name">gz.warehouse.config.tree</field>
+        <field name="model">gz.warehouse.config</field>
+        <field name="arch" type="xml">
+            <tree string="仓储参数">
+                <field name="warehouse_id"/>
+                <field name="enterprise_id"/>
+                <field name="warehouse_type"/>
+                <field name="park_name" optional="show"/>
+                <field name="location_count"/>
+                <field name="capacity" sum="合计库容"/>
+                <field name="temperature_control"/>
+                <field name="contact_name" optional="hide"/>
+                <field name="contact_phone" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         仓储参数：表单
+         ================================================================== -->
+    <record id="view_gz_warehouse_config_form" model="ir.ui.view">
+        <field name="name">gz.warehouse.config.form</field>
+        <field name="model">gz.warehouse.config</field>
+        <field name="arch" type="xml">
+            <form string="仓储参数">
+                <sheet>
+                    <group>
+                        <group string="仓库">
+                            <field name="warehouse_id"/>
+                            <field name="enterprise_id" options="{'no_create': True}"/>
+                            <field name="warehouse_type"/>
+                            <field name="park_name"/>
+                        </group>
+                        <group string="参数">
+                            <field name="location_count"/>
+                            <field name="capacity"/>
+                            <field name="temperature_control"/>
+                        </group>
+                    </group>
+                    <group string="联系与地址">
+                        <group>
+                            <field name="contact_name"/>
+                            <field name="contact_phone"/>
+                        </group>
+                        <group>
+                            <field name="address"/>
+                        </group>
+                    </group>
+                    <group string="备注">
+                        <field name="remark" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         仓储参数：搜索
+         ================================================================== -->
+    <record id="view_gz_warehouse_config_search" model="ir.ui.view">
+        <field name="name">gz.warehouse.config.search</field>
+        <field name="model">gz.warehouse.config</field>
+        <field name="arch" type="xml">
+            <search string="仓储参数">
+                <field name="warehouse_id"/>
+                <field name="enterprise_id"/>
+                <field name="park_name"/>
+                <filter name="filter_temperature" string="温控仓库"
+                        domain="[('temperature_control', '=', True)]"/>
+                <filter name="filter_own" string="自有仓" domain="[('warehouse_type', '=', 'own')]"/>
+                <group expand="0" string="分组">
+                    <filter name="group_warehouse_type" string="仓库类型" context="{'group_by': 'warehouse_type'}"/>
+                    <filter name="group_enterprise" string="归属企业" context="{'group_by': 'enterprise_id'}"/>
+                    <filter name="group_park" string="所属园区" context="{'group_by': 'park_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         仓储参数：动作
+         ================================================================== -->
+    <record id="action_gz_warehouse_config" model="ir.actions.act_window">
+        <field name="name">仓储参数</field>
+        <field name="res_model">gz.warehouse.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_gz_warehouse_config_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有仓储参数</p>
+            <p>为每个仓库登记库位数、库容（吨）与温控要求，与自研平台 warehouse 参数同步。</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gz_enterprise_platform_admin,gz.enterprise platform admin,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_platform_admin,1,1,1,1
+access_gz_enterprise_park_operator,gz.enterprise park operator,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_park_operator,1,1,1,0
+access_gz_enterprise_finance,gz.enterprise finance,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_finance,1,0,0,0
+access_gz_enterprise_merchant,gz.enterprise merchant,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_merchant,1,1,1,0
+access_gz_enterprise_supplier,gz.enterprise supplier,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_supplier,1,1,1,0
+access_gz_enterprise_buyer,gz.enterprise buyer,gz_platform_base.model_gz_enterprise,gz_platform_base.group_gz_buyer,1,0,1,0

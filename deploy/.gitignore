@@ -1,0 +1,35 @@
+# ==============================================================================
+# deploy/.gitignore —— 部署目录忽略规则
+# 原则：环境变量与备份数据绝不入库；配置模板（*.example）必须入库。
+# ==============================================================================
+
+# 环境变量：含全部生产密码与密钥，禁止提交
+.env
+.env.*
+!.env.example
+
+# 数据库与对象存储备份（体积大且含业务数据）
+backups/
+*.dump
+*.sql.gz
+*.tar.gz
+
+# 运行期产生的数据目录（nginx 日志、API 本地降级文件存储）
+data/
+
+# 本地覆盖的 compose 文件（例如 docker-compose.override.yml 里放个人调试端口）
+docker-compose.override.yml
+docker-compose.*.local.yml
+docker-compose.candidate-*.yml
+
+# 日志
+*.log
+logs/
+
+# 编辑器 / 操作系统
+*.swp
+*~
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

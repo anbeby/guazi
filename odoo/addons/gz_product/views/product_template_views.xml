@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         商品模板：表单插入「瓜子油料信息」页签
+         继承原生 product.product_template_form_view（真实存在的外部 ID）
+         ================================================================== -->
+    <record id="view_product_template_form_gz" model="ir.ui.view">
+        <field name="name">product.template.form.gz</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="瓜子油料信息" name="gz_product_info">
+                    <div class="d-flex gap-2 mb-2" name="gz_product_buttons">
+                        <button name="action_gz_submit_audit" type="object"
+                                string="提交平台审核" class="btn btn-secondary"
+                                groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                        <button name="action_gz_audit_approve" type="object"
+                                string="平台审核通过" class="btn btn-primary"
+                                groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                        <button name="action_gz_audit_reject" type="object"
+                                string="平台审核驳回" class="btn btn-secondary"
+                                groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator"/>
+                        <button name="action_gz_publish" type="object"
+                                string="上架" class="btn btn-primary"
+                                invisible="gz_publish_state == 'published'"
+                                groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                        <button name="action_gz_offline" type="object"
+                                string="下架" class="btn btn-secondary"
+                                invisible="gz_publish_state != 'published'"
+                                groups="gz_platform_base.group_gz_platform_admin,gz_platform_base.group_gz_park_operator,gz_platform_base.group_gz_merchant,gz_platform_base.group_gz_supplier"/>
+                    </div>
+                    <group>
+                        <group string="归属与规格">
+                            <field name="gz_enterprise_id"
+                                   options="{'no_create': True, 'no_open': False}"/>
+                            <field name="gz_spec" placeholder="如：千粒重 ≥ 180g"/>
+                            <field name="gz_grade"/>
+                            <field name="gz_origin" placeholder="如：新疆阿勒泰"/>
+                            <field name="gz_harvest_year" placeholder="如：2025"/>
+                            <field name="gz_package" placeholder="如：50kg 编织袋 / 散装"/>
+                        </group>
+                        <group string="质检与检测报告">
+                            <field name="gz_quality_status"/>
+                            <field name="gz_test_report" filename="gz_test_report_filename"/>
+                            <field name="gz_test_report_filename"/>
+                            <field name="gz_trace_enabled"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="平台发布">
+                            <field name="gz_publish_state"/>
+                            <field name="gz_audit_status"/>
+                            <field name="gz_audit_user_id"/>
+                            <field name="gz_audit_date"/>
+                            <field name="gz_audit_remark"/>
+                        </group>
+                        <group string="交易参数">
+                            <field name="gz_min_order_qty"/>
+                            <field name="gz_stock_warn_qty"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="平台审核日志" name="gz_product_audit_log">
+                    <field name="gz_audit_log_ids" readonly="1" nolabel="1">
+                        <tree>
+                            <field name="event_time"/>
+                            <field name="action"/>
+                            <field name="operator_id"/>
+                            <field name="note"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         商品模板：列表增加 规格 / 等级 / 产地 / 年份 / 发布状态
+         继承原生 product.product_template_tree_view
+         ================================================================== -->
+    <record id="view_product_template_tree_gz" model="ir.ui.view">
+        <field name="name">product.template.tree.gz</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="gz_spec" optional="show"/>
+                <field name="gz_grade" optional="show"/>
+                <field name="gz_origin" optional="show"/>
+                <field name="gz_harvest_year" optional="hide"/>
+                <field name="gz_publish_state" optional="show"/>
+                <field name="gz_audit_status" optional="hide"/>
+                <field name="gz_quality_status" optional="hide"/>
+                <field name="gz_enterprise_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         商品模板：搜索增加 等级 / 产地 / 发布状态 / 年份 过滤与分组
+         继承原生 product.product_template_search_view
+         ================================================================== -->
+    <record id="view_product_template_search_gz" model="ir.ui.view">
+        <field name="name">product.template.search.gz</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="gz_enterprise_id" string="归属企业"/>
+                <field name="gz_origin" string="产地"/>
+                <field name="gz_harvest_year" string="年份"/>
+                <filter name="gz_filter_published" string="平台已上架"
+                        domain="[('gz_publish_state', '=', 'published')]"/>
+                <filter name="gz_filter_pending_audit" string="平台待审核"
+                        domain="[('gz_audit_status', '=', 'pending')]"/>
+                <separator/>
+                <filter name="gz_filter_grade_special" string="特级"
+                        domain="[('gz_grade', '=', 'special')]"/>
+                <filter name="gz_filter_grade_first" string="一级"
+                        domain="[('gz_grade', '=', 'first')]"/>
+                <filter name="gz_filter_grade_second" string="二级"
+                        domain="[('gz_grade', '=', 'second')]"/>
+                <filter name="gz_filter_grade_mixed" string="统货"
+                        domain="[('gz_grade', '=', 'mixed')]"/>
+                <separator/>
+                <filter name="gz_filter_qualified" string="质检合格"
+                        domain="[('gz_quality_status', '=', 'qualified')]"/>
+                <filter name="gz_filter_trace" string="已启用溯源"
+                        domain="[('gz_trace_enabled', '=', True)]"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <group expand="0" string="瓜子油料分组">
+                    <filter name="gz_group_grade" string="等级"
+                            context="{'group_by': 'gz_grade'}"/>
+                    <filter name="gz_group_origin" string="产地"
+                            context="{'group_by': 'gz_origin'}"/>
+                    <filter name="gz_group_harvest_year" string="年份"
+                            context="{'group_by': 'gz_harvest_year'}"/>
+                    <filter name="gz_group_publish_state" string="发布状态"
+                            context="{'group_by': 'gz_publish_state'}"/>
+                    <filter name="gz_group_enterprise" string="归属企业"
+                            context="{'group_by': 'gz_enterprise_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         商品档案：动作（本模块自定义，避免依赖原生 action 外部 ID）
+         ================================================================== -->
+    <record id="action_gz_product_template" model="ir.actions.act_window">
+        <field name="name">商品档案</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="search_view_id" ref="product.product_template_search_view"/>
+        <field name="context">{'search_default_gz_filter_published': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有瓜子油料商品</p>
+            <p>登记商品后在「瓜子油料信息」页签提交平台审核，审核通过即可上架。</p>
+        </field>
+    </record>
+
+</odoo>

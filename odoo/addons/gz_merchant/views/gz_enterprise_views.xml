@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         企业主体（继承 gz_platform_base）：列表增加商户等级 / 年产能
+         ================================================================== -->
+    <record id="view_gz_enterprise_tree_merchant" model="ir.ui.view">
+        <field name="name">gz.enterprise.tree.merchant</field>
+        <field name="model">gz.enterprise</field>
+        <field name="inherit_id" ref="gz_platform_base.view_gz_enterprise_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='enterprise_type']" position="after">
+                <field name="merchant_level" optional="show"/>
+                <field name="annual_capacity" optional="hide"/>
+                <field name="main_products" optional="hide"/>
+                <field name="qualification_count" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         企业主体（继承 gz_platform_base）：表单增加「商户档案」页签
+         ================================================================== -->
+    <record id="view_gz_enterprise_form_merchant" model="ir.ui.view">
+        <field name="name">gz.enterprise.form.merchant</field>
+        <field name="model">gz.enterprise</field>
+        <field name="inherit_id" ref="gz_platform_base.view_gz_enterprise_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="商户档案" name="gz_merchant_profile">
+                    <group>
+                        <group string="证照信息">
+                            <field name="license_no"/>
+                            <field name="food_production_license"/>
+                        </group>
+                        <group string="经营能力">
+                            <field name="merchant_level"/>
+                            <field name="annual_capacity" widget="float" options="{'digits': [16, 3]}"/>
+                            <field name="main_products"/>
+                            <field name="qualification_count"/>
+                            <field name="expired_qualification_count"/>
+                        </group>
+                    </group>
+                    <field name="qualification_ids" nolabel="1"
+                           context="{'default_enterprise_id': id}">
+                        <tree editable="bottom">
+                            <field name="name"/>
+                            <field name="qual_type"/>
+                            <field name="issue_date"/>
+                            <field name="expire_date"/>
+                            <field name="days_to_expire"/>
+                            <field name="state" widget="badge"/>
+                            <field name="file_name" optional="hide"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="入驻申请" name="gz_merchant_entries">
+                    <field name="entry_ids" nolabel="1" context="{'default_enterprise_id': id}">
+                        <tree>
+                            <field name="name"/>
+                            <field name="apply_date"/>
+                            <field name="park_name"/>
+                            <field name="stall_code"/>
+                            <field name="applicant"/>
+                            <field name="state" widget="badge"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ==================================================================
+         商户档案：动作（复用 gz_platform_base 的企业主体视图，按类型过滤）
+         ================================================================== -->
+    <record id="action_gz_merchant_profile" model="ir.actions.act_window">
+        <field name="name">商户档案</field>
+        <field name="res_model">gz.enterprise</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('enterprise_type', 'in', ['merchant', 'supplier'])]</field>
+        <field name="context">{'default_enterprise_type': 'merchant'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">还没有商户档案</p>
+            <p>商户档案在企业主体基础上扩展证照、商户等级、年产能与资质附件。</p>
+        </field>
+    </record>
+
+</odoo>
